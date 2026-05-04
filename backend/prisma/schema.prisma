@@ -121,7 +121,7 @@ model LearningProgress {
   id               String   @id @default(cuid())
   studentId        String
   courseId         String
-  completedLessons String[] // Array of lesson ids for PostgreSQL
+  completedLessons Json // Array of lesson ids for PostgreSQL
   currentModuleId  String?
   percentage       Int      @default(0)
   status           String   @default("not_started")
@@ -186,7 +186,7 @@ model Canvas {
   description String?
   data        Json?    // Stores canvas state/shapes
   isPublic    Boolean  @default(false)
-  collaborators String[] // Array of student IDs
+  collaborators Json // Array of student IDs
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   lastModifiedBy String?
