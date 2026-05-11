@@ -19,9 +19,11 @@ export default function CertificateNFTPage() {
   } | null>(null);
 
   useEffect(() => {
+    if (!params?.id) return;
+    
     async function loadCertificate() {
       try {
-        const data = await certificatesAPI.getById(params.id as string);
+        const data = await certificatesAPI.getById(params?.id as string);
         setCertificate(data);
       } catch (error) {
         console.error('Failed to load certificate:', error);
@@ -32,7 +34,7 @@ export default function CertificateNFTPage() {
     }
 
     loadCertificate();
-  }, [params.id, router]);
+  }, [params, router]);
 
   const verifyOnChain = async () => {
     if (!certificate) return;
