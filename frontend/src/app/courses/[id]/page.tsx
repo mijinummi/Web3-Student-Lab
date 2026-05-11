@@ -17,9 +17,13 @@ export default function CourseDetailPage() {
   const [mintSuccess, setMintSuccess] = useState(false);
 
   useEffect(() => {
+    if (!params?.id) return;
+    
     async function loadCourse() {
       try {
-        const data = await coursesAPI.getById(params.id as string);
+        const id = typeof params?.id === 'string' ? params.id : params?.id?.[0];
+        if (!id) return;
+        const data = await coursesAPI.getById(id);
         setCourse(data);
 
         // Check if user is enrolled
@@ -37,7 +41,7 @@ export default function CourseDetailPage() {
     }
 
     loadCourse();
-  }, [params.id, user, router]);
+  }, [params, user, router]);
 
   const handleEnroll = () => {
     if (!user || !course) return;
