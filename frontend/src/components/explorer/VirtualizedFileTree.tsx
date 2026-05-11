@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { VariableSizeList as List } from 'react-window';
+import { List } from 'react-window';
 import { PresenceIndicator } from '@/components/explorer/PresenceIndicator';
 import { FilePresenceManager } from '@/lib/explorer/FilePresence';
 

@@ -19,6 +19,7 @@ export default function BrainstormPage() {
   };
 
   useEffect(() => {
+    if (!searchParams) return;
     const sessionId = searchParams.get('session') || generateRoomId();
     setRoomId(sessionId);
 
