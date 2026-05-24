@@ -1,4 +1,4 @@
-import { getAddress, verifyMessage } from 'ethers';
+import { ethers } from 'ethers';
 import prisma from '../db/index.js';
 import { generateAccessToken, generateRefreshToken, TokenPayload } from './token.service.js';
 import { formatUserResponse } from './auth.service.js';
@@ -23,7 +23,7 @@ export const generateNonce = (): string => {
  */
 export const createNonce = async (walletAddress: string): Promise<string> => {
   // Normalize wallet address to checksum format
-  const normalizedAddress = getAddress(walletAddress);
+  const normalizedAddress = ethers.utils.getAddress(walletAddress);
 
   // Clean up any existing nonces for this wallet
   await prisma.authNonce.deleteMany({
@@ -82,7 +82,7 @@ export const verifySignature = async (
 
   try {
     // Recover the signer address from the signature
-    const recoveredAddress = verifyMessage(message, signature);
+    const recoveredAddress = ethers.utils.verifyMessage(message, signature);
 
     // Verify the recovered address matches the claimed wallet address
     if (recoveredAddress.toLowerCase() !== normalizedAddress.toLowerCase()) {
