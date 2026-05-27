@@ -53,6 +53,15 @@ pub mod merkle_distributor;
 pub mod milestone_release;
 pub mod token;
 pub mod upgrade;
+pub mod lending;
+#[cfg(test)]
+pub mod lending_tests;
+pub mod circuit_breaker;
+#[cfg(test)]
+pub mod circuit_breaker_tests;
+pub mod bounty_escrow;
+#[cfg(test)]
+pub mod bounty_escrow_tests;
 
 use soroban_sdk::{contract, contractimpl, contracttype, Address, Env};
 
