@@ -8,7 +8,11 @@ members = [
     ".",
     "proxy",
     "implementation_v1",
-    "implementation_v2"
+    "implementation_v2",
+    "smart_vault",
+    "payment_streaming",
+    "commit_reveal_rng",
+    "quadratic_funding"
 ]
 
 [lib]
