@@ -12,6 +12,7 @@ import exportRouter from './export.routes.js';
 import generatorRouter from './generator/generator.routes.js';
 import healthRouter from './health.routes.js';
 import learningRoutes from './learning/learning.routes.js';
+import metricsRouter from './metrics.routes.js';
 import securityRouter from './security.routes.js';
 import studentsRouter from './students.js';
 
@@ -32,5 +33,6 @@ router.use('/security', securityRouter);
 router.use('/generator', generatorRouter);
 router.use('/export', exportRouter);
 router.use('/user', userRouter);
+router.use('/metrics', metricsRouter);
 
 export default router;
