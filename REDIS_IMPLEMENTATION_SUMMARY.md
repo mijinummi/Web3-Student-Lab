@@ -7,6 +7,7 @@
 Successfully implemented a distributed caching layer with Redis for the Web3 Student Lab backend to handle high-frequency blockchain data queries without hitting RPC node rate limits.
 
 
+
 ### 📋 Deliverables
 
 
@@ -20,6 +21,7 @@ Successfully implemented a distributed caching layer with Redis for the Web3 Stu
 | CacheWarmer | `backend/src/cache/CacheWarmer.ts` | Proactively populates cache with frequently accessed data |
 | DistributedCacheManager | `backend/src/cache/DistributedCacheManager.ts` | Manages distributed cache across cluster nodes |
 | CacheService | `backend/src/cache/CacheService.ts` | Enhanced with blockchain-specific methods |
+
 
 #### 2. **Configuration & Infrastructure**
 
