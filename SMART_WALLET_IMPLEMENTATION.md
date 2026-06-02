@@ -1,7 +1,5 @@
 # Smart Contract Wallet Implementation Summary
 
-
-
 **Issue:** #407 - Implement Smart Contract Wallet with Account Abstraction and Gas Sponsorship
 
 ## Files Created
