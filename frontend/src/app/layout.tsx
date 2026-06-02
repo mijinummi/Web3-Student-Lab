@@ -16,6 +16,7 @@ import { ToastContainer } from '@/components/notifications/ToastContainer';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { I18nProvider } from '@/i18n';
 import { Web3OnboardingProvider } from '@/contexts/Web3OnboardingContext';
+import { SkipLink } from '@/components/ui/SkipLink';
 
 export default function RootLayout({
   children,
@@ -50,12 +51,15 @@ export default function RootLayout({
               <I18nProvider>
                 <NotificationProvider>
                   <Web3OnboardingProvider>
-                    <a href="#main-content" className="skip-to-content">
-                      Skip to main content
-                    </a>
+                    <SkipLink
+                      targets={[
+                        { id: 'main-content', label: 'Skip to main content' },
+                        { id: 'primary-navigation', label: 'Skip to navigation' },
+                      ]}
+                    />
                     <Navbar />
                     <ResiliencyBanner />
-                    <main id="main-content" className="flex-grow">
+                    <main id="main-content" className="flex-grow outline-none" tabIndex={-1}>
                       {children}
                     </main>
                     <ToastContainer />
