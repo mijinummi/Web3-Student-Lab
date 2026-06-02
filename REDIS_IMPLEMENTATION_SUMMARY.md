@@ -43,6 +43,7 @@ Successfully implemented a distributed caching layer with Redis for the Web3 Stu
 
 ### 🚀 Key Features Implemented
 
+
 #### **1. Multi-Mode Redis Support**
 ```bash
 REDIS_MODE=standalone   # Single node (development)
@@ -56,11 +57,13 @@ REDIS_MODE=cluster      # Distributed across multiple nodes
 - Event-driven pub/sub invalidation
 - Graceful cleanup on shutdown
 
+
 #### **3. RPC Call Interception**
 - Transparent caching of Soroban RPC responses
 - Automatic cache key generation from method + params
 - Per-method TTL configuration
 - Cache hit/miss headers in responses
+
 
 #### **4. Distributed Cache Warming**
 - Proactive population of high-frequency data
