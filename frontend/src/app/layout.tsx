@@ -1,6 +1,7 @@
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { WalletProvider } from '@/contexts/WalletContext';
+import { SkeletonThemeWrapper } from '@/components/ui/SkeletonThemeWrapper';
 import type { Metadata } from 'next';
 import './globals.css';
 
@@ -56,7 +57,9 @@ export default function RootLayout({
                     <Navbar />
                     <ResiliencyBanner />
                     <main id="main-content" className="flex-grow">
-                      {children}
+                      <SkeletonThemeWrapper>
+                        {children}
+                      </SkeletonThemeWrapper>
                     </main>
                     <ToastContainer />
                   </Web3OnboardingProvider>

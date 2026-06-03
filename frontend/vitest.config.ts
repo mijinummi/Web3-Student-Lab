@@ -1,6 +1,12 @@
 import { defineConfig } from 'vitest/config';
+import path from 'path';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
@@ -16,6 +22,11 @@ export default defineConfig({
       include: [
         'src/lib/p2p-crypto.ts',
         'src/lib/web3-transaction-simulator.ts',
+        'src/components/ui/SkeletonThemeWrapper.tsx',
+        'src/components/ui/skeletons/PageSkeletons.tsx',
+        'src/components/ui/WithSkeleton.tsx',
+        'src/components/ui/ErrorFallback.tsx',
+        'src/components/ui/ErrorBoundary.tsx',
       ],
     },
   },
