@@ -23,11 +23,7 @@ export default defineConfig({
       include: [
         'src/lib/p2p-crypto.ts',
         'src/lib/web3-transaction-simulator.ts',
-        'src/lib/roadmap-utils.ts',
-        'src/lib/types/roadmap.ts',
-        'src/components/roadmap/**/*.tsx',
-        'src/hooks/useRoadmapProgress.ts',
-        'src/lib/learning-api.ts',
+        'src/hooks/useBlockchainExplorer.ts',
       ],
     },
   },
