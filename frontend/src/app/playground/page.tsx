@@ -20,6 +20,9 @@ const INITIAL_TREE: FileTreeNode[] = [
     type: 'folder',
     children: [
       { id: 'lib-rs', name: 'lib.rs', path: '/src/lib.rs', type: 'file' },
+      { id: 'file-notarization-rs', name: 'file_notarization.rs', path: '/src/file_notarization.rs', type: 'file' },
+      { id: 'payment-gateway-rs', name: 'payment_gateway.rs', path: '/src/payment_gateway.rs', type: 'file' },
+      { id: 'timestamping-rs', name: 'timestamping.rs', path: '/src/timestamping.rs', type: 'file' },
       { id: 'contract-rs', name: 'contract.rs', path: '/src/contract.rs', type: 'file' },
       { id: 'types-rs', name: 'types.rs', path: '/src/types.rs', type: 'file' },
     ],
@@ -182,7 +185,7 @@ export default function PlaygroundPage() {
     // Simulate compilation delay
     setTimeout(() => {
       setOutput(
-        `✅ Compilation successful!\n📦 WASM size: 4.2KB\n🗂 Active file: ${activeFilePath}\n🚀 Contract ready for simulation.`
+        `✅ Compilation successful!\n📦 WASM size: 4.2KB\n🗂 Active file: ${activeFilePath}\n🚀 Contract ready for simulation.\n🧾 Notarization: register_hash / verify / history_for_owner\n💳 Gateway: process_payment / refund_payment / open_dispute / resolve_dispute`
       );
       setIsCompiling(false);
     }, 1500);
@@ -299,9 +302,9 @@ export default function PlaygroundPage() {
                 Laboratory Notes
               </h4>
               <p className="text-[11px] leading-relaxed font-light text-gray-500">
-                This playground provides a{' '}
-                <span className="text-white">real-time transpilation</span> environment for Soroban
-                logic. Validated code can be deployed to the Stellar testnet via the integrated CLI
+                This playground now includes the educational notarization and payment gateway modules.
+                Learners can inspect hash timestamping, escrowed payment processing, refunds, and
+                dispute resolution before deploying validated Soroban logic with the integrated CLI
                 tools in the <span className="text-red-500">Builder Tier</span> modules.
               </p>
             </div>
