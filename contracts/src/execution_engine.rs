@@ -488,7 +488,7 @@ mod tests {
 
     #[test]
     fn test_insufficient_balance_error() {
-        let (env, _admin, client) = setup();
+        let (_env, _admin, _client) = setup();
 
         let error = ExecutionEngineError::InsufficientBalance;
         assert_eq!(error as u32, 9);
@@ -496,7 +496,7 @@ mod tests {
 
     #[test]
     fn test_cross_contract_call_failed_error() {
-        let (env, _admin, client) = setup();
+        let (_env, _admin, _client) = setup();
 
         let error = ExecutionEngineError::CrossContractCallFailed;
         assert_eq!(error as u32, 10);

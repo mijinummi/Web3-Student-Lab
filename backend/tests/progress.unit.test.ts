@@ -49,12 +49,16 @@ jest.unstable_mockModule('../../src/cache/CacheInvalidation.js', () => ({
   invalidateUserProgressCache: mockInvalidateUserProgressCache,
 }));
 
-// Import after mocking
-const { getStudentProgress, updateStudentProgress } = await import(
-  '../../src/routes/learning/learning.service.js'
-);
+let getStudentProgress: any;
+let updateStudentProgress: any;
 
 describe('Progress Service - Unit Tests', () => {
+  beforeAll(async () => {
+    const service = await import('../../src/routes/learning/learning.service.js');
+    getStudentProgress = service.getStudentProgress;
+    updateStudentProgress = service.updateStudentProgress;
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     // Default: no cache hit

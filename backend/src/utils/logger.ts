@@ -1,4 +1,5 @@
 import winston, { format } from 'winston';
+import { executionAsyncId } from 'async_hooks';
 
 const { combine, timestamp, printf, colorize, errors, json, metadata } = format;
 
@@ -13,7 +14,7 @@ const correlationIdContext = new Map<string, string>();
  * @param correlationId - The correlation ID to set
  */
 export function setCorrelationId(correlationId: string): void {
-  const asyncId = require('async_hooks').asyncLocalStorage.getStore()?.id || 'default';
+  const asyncId = String(executionAsyncId());
   correlationIdContext.set(asyncId, correlationId);
 }
 
@@ -22,7 +23,7 @@ export function setCorrelationId(correlationId: string): void {
  * @returns The correlation ID or undefined if not set
  */
 export function getCorrelationId(): string | undefined {
-  const asyncId = require('async_hooks').asyncLocalStorage.getStore()?.id || 'default';
+  const asyncId = String(executionAsyncId());
   return correlationIdContext.get(asyncId);
 }
 
@@ -30,7 +31,7 @@ export function getCorrelationId(): string | undefined {
  * Clear the correlation ID for the current context
  */
 export function clearCorrelationId(): void {
-  const asyncId = require('async_hooks').asyncLocalStorage.getStore()?.id || 'default';
+  const asyncId = String(executionAsyncId());
   correlationIdContext.delete(asyncId);
 }
 

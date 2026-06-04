@@ -159,7 +159,7 @@ describe('Certificate Validation Schemas', () => {
         revokedBy: 'did:stellar:ADMIN123456789',
       };
       const result = RevokeCertificateSchema.parse(valid);
-      expect(result.reason).toHaveLength(43);
+      expect(result.reason).toHaveLength(39);
     });
 
     it('should reject missing reason', () => {

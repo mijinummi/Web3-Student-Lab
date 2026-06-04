@@ -534,8 +534,8 @@ pub fn generate_token_id(env: &Env, course_symbol: &Symbol, student: &Address) -
 
     // Extract first 16 bytes for u128
     let mut hash_arr = [0u8; 16];
-    for i in 0..16 {
-        hash_arr[i] = BytesN::from(hash_bytes.clone()).get(i as u32).unwrap_or(0);
+    for (i, val) in hash_arr.iter_mut().enumerate() {
+        *val = BytesN::from(hash_bytes.clone()).get(i as u32).unwrap_or(0);
     }
     u128::from_be_bytes(hash_arr)
 }

@@ -1,7 +1,4 @@
-'use client';
 
-import { AirdropDashboard } from '@/components/airdrop/AirdropDashboard';
-
-export default function AirdropPage() {
-  return <AirdropDashboard />;
-}
+import dynamic from 'next/dynamic';
+const AirdropClient = dynamic(() => import('./AirdropClient'), { ssr: false });
+export default function Page() { return <AirdropClient />; }

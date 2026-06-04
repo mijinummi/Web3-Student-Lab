@@ -2,6 +2,8 @@
 import cors from 'cors';
 import express, { Request, Response } from 'express';
 import { createServer } from 'http';
+import { errorHandler } from './middleware/errorHandler.js';
+import { initializeSentry, getSentryRequestHandler, getSentryErrorHandler } from './utils/sentry.js';
 import swaggerUi from 'swagger-ui-express';
 import blockHeaderListener from './cache/BlockHeaderListener.js';
 import cacheMetrics from './cache/CacheMetrics.js';
