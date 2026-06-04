@@ -1,300 +1,113 @@
 'use client';
 
-import { useState } from 'react';
-import { useTutorial } from '@/contexts/TutorialContext';
-
-const NODES = [
-  {
-    id: 1,
-    title: 'Foundations',
-    desc: 'Ledger basics, accounts, and trustlines.',
-    status: 'COMPLETED',
-    x: '50%',
-    y: '10%',
-  },
-  {
-    id: 2,
-    title: 'Assets & SDEX',
-    desc: 'Issuing tokens and liquidity pools.',
-    status: 'IN_PROGRESS',
-    x: '30%',
-    y: '35%',
-  },
-  {
-    id: 3,
-    title: 'Soroban 101',
-    desc: 'Rust smart contracts and WASM.',
-    status: 'LOCKED',
-    x: '70%',
-    y: '35%',
-  },
-  {
-    id: 4,
-    title: 'Advanced DeFi',
-    desc: 'Flash loans and cross-chain hooks.',
-    status: 'LOCKED',
-    x: '50%',
-    y: '60%',
-  },
-  {
-    id: 5,
-    title: 'Protocol Expert',
-    desc: 'Core architecture and consensus.',
-    status: 'LOCKED',
-    x: '50%',
-    y: '85%',
-  },
-];
+import { useState, useEffect, useMemo } from 'react';
+import { RoadmapView } from '@/components/roadmap';
+import { coursesAPI } from '@/lib/api';
+import type { Course } from '@/lib/api';
+import { Skeleton } from '@/components/common/Skeleton';
 
 export default function RoadmapPage() {
-  const [activeNode, setActiveNode] = useState(NODES[1]);
-  const { startTutorial } = useTutorial();
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadCourses() {
+      try {
+        const data = await coursesAPI.getAll();
+        if (!mounted) return;
+        setCourses(data);
+        if (data.length > 0) {
+          setSelectedCourseId(data[0]!.id);
+        }
+      } catch (err) {
+        if (!mounted) return;
+        setError(
+          err instanceof Error ? err.message : 'Failed to load courses'
+        );
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    loadCourses();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const selectedCourse = useMemo(
+    () => courses.find((c) => c.id === selectedCourseId) ?? null,
+    [courses, selectedCourseId]
+  );
 
   return (
-    <div className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-black p-6 font-mono text-white md:p-12">
-      {/* Background Grid Accent */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#222_1px,transparent_1px)] bg-[size:40px_40px] opacity-50"></div>
-
-      <div className="mx-auto flex h-full max-w-7xl flex-col items-center">
-        {/* Header */}
-        <div className="mb-16 w-full border-b border-red-600/20 pb-8 text-center" data-tour-step="roadmap-header">
-          <div className="mb-4 flex items-center justify-center gap-4">
-            <h1 className="text-4xl font-black tracking-tighter uppercase">
-              Technical <span className="text-red-500">Roadmap</span>
-            </h1>
-            <button
-              onClick={() => startTutorial('roadmap')}
-              className="rounded border border-red-600/30 bg-red-600/10 px-4 py-2 text-[10px] font-black tracking-widest text-red-500 uppercase transition-colors hover:bg-red-600/20"
-              aria-label="Start roadmap tutorial"
-            >
-              ? Tutorial
-            </button>
-          </div>
-          <p className="text-xs tracking-[0.3em] text-gray-500 uppercase">
-            Module Hierarchy & Skill Acquisition Tree
-          </p>
-        </div>
-
-        <div className="relative flex aspect-[4/5] w-full max-w-4xl items-center justify-center overflow-hidden rounded-[3rem] border border-white/5 bg-zinc-950/20 p-12 shadow-inner md:aspect-video" data-tour-step="roadmap-nodes">
-          {/* Connecting Lines (SVG) */}
-          <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-20">
-            <line
-              x1="50%"
-              y1="10%"
-              x2="30%"
-              y2="35%"
-              stroke="white"
-              strokeWidth="1"
-              strokeDasharray="4"
-            />
-            <line
-              x1="50%"
-              y1="10%"
-              x2="70%"
-              y2="35%"
-              stroke="white"
-              strokeWidth="1"
-              strokeDasharray="4"
-            />
-            <line
-              x1="30%"
-              y1="35%"
-              x2="50%"
-              y2="60%"
-              stroke="white"
-              strokeWidth="1"
-              strokeDasharray="4"
-            />
-            <line
-              x1="70%"
-              y1="35%"
-              x2="50%"
-              y2="60%"
-              stroke="white"
-              strokeWidth="1"
-              strokeDasharray="4"
-            />
-            <line
-              x1="50%"
-              y1="60%"
-              x2="50%"
-              y2="85%"
-              stroke="white"
-              strokeWidth="1"
-              strokeDasharray="4"
-            />
-          </svg>
-
-          {/* Nodes */}
-          {NODES.map((node) => (
-            <button
-              key={node.id}
-              onClick={() => setActiveNode(node)}
-              className={`group absolute flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 transform items-center justify-center rounded-full border-4 transition-all duration-500 ${
-                activeNode.id === node.id ? 'z-20 scale-125' : 'z-10 bg-black'
-              } ${
-                node.status === 'COMPLETED'
-                  ? 'border-green-500 bg-green-500/10'
-                  : node.status === 'IN_PROGRESS'
-                    ? 'animate-pulse border-red-600 bg-red-600/10'
-                    : 'border-zinc-800 bg-zinc-900 opacity-60'
-              }`}
-              style={{ left: node.x, top: node.y }}
-            >
-              <div
-                className={`h-3 w-3 rounded-full ${
-                  node.status === 'COMPLETED'
-                    ? 'bg-green-500 shadow-[0_0_10px_#22c55e]'
-                    : node.status === 'IN_PROGRESS'
-                      ? 'bg-red-500 shadow-[0_0_10px_#ef4444]'
-                      : 'bg-zinc-700'
-                }`}
-              ></div>
-
-              {/* Tooltip Label */}
-              <div className="pointer-events-none absolute top-16 left-1/2 -translate-x-1/2 whitespace-nowrap opacity-0 transition-opacity group-hover:opacity-100">
-                <span className="rounded border border-white/10 bg-zinc-900 px-2 py-1 text-[9px] font-black tracking-widest uppercase">
-                  {node.title}
-                </span>
-              </div>
-            </button>
-          ))}
-
-          {/* Active Detail Overlay */}
-          <div className="animate-in fade-in slide-in-from-bottom-4 absolute right-10 bottom-10 left-10 rounded-2xl border border-red-500/30 bg-zinc-950 p-6 shadow-2xl backdrop-blur-xl md:right-10 md:left-auto md:w-80" data-tour-step="roadmap-detail">
-            <div className="mb-4 flex items-start justify-between">
-              <span
-                className={`rounded border px-2 py-0.5 text-[9px] font-black tracking-widest uppercase ${
-                  activeNode.status === 'COMPLETED'
-                    ? 'border-green-500/30 bg-green-500/10 text-green-500'
-                    : activeNode.status === 'IN_PROGRESS'
-                      ? 'border-red-500/30 bg-red-500/10 text-red-500'
-                      : 'border-white/5 bg-zinc-800 text-gray-500'
-                }`}
-              >
-                {activeNode.status.replace('_', ' ')}
-              </span>
-              <span className="text-[10px] font-bold text-gray-600">NODE_0{activeNode.id}</span>
-            </div>
-            <h3 className="mb-2 text-xl font-black tracking-tighter text-white uppercase">
-              {activeNode.title}
-            </h3>
-            <p className="mb-6 text-xs leading-relaxed font-light text-gray-400">
-              {activeNode.desc}
-            </p>
-            <button
-              data-tour-step="roadmap-action-btn"
-              className={`w-full py-3 text-[10px] font-black tracking-widest uppercase transition-all ${
-                activeNode.status === 'LOCKED'
-                  ? 'cursor-not-allowed bg-zinc-800 text-gray-600'
-                  : 'bg-red-600 text-white hover:bg-red-500 active:scale-95'
-              }`}
-            >
-              {activeNode.status === 'COMPLETED'
-                ? 'Review Protocol'
-                : activeNode.status === 'IN_PROGRESS'
-                  ? 'Initiate Node'
-                  : 'Node Locked'}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Vertical Timeline */}
-        <div className="flex md:hidden flex-col gap-6 w-full max-w-md relative px-4">
-          {/* Vertical Connecting Line */}
-          <div className="absolute left-[39px] top-6 bottom-6 w-0.5 border-l-2 border-dashed border-zinc-800"></div>
-
-          {NODES.map((node) => {
-            const isCompleted = node.status === 'COMPLETED';
-            const isInProgress = node.status === 'IN_PROGRESS';
-            const isLocked = node.status === 'LOCKED';
-
-            return (
-              <div
-                key={node.id}
-                onClick={() => setActiveNode(node)}
-                className={`relative flex gap-4 p-4 rounded-2xl border transition-all duration-300 ${
-                  activeNode.id === node.id
-                    ? 'border-red-500/50 bg-zinc-950/80 shadow-lg'
-                    : 'border-white/5 bg-zinc-950/30'
-                }`}
-              >
-                {/* Status Dot in Column */}
-                <div className="relative z-10 flex flex-col items-center justify-start pt-1">
-                  <div
-                    className={`flex h-11 w-11 items-center justify-center rounded-full border-2 ${
-                      isCompleted
-                        ? 'border-green-500 bg-green-500/10'
-                        : isInProgress
-                          ? 'animate-pulse border-red-500 bg-red-500/10'
-                          : 'border-zinc-800 bg-zinc-900'
-                    }`}
-                  >
-                    <div
-                      className={`h-2.5 w-2.5 rounded-full ${
-                        isCompleted
-                          ? 'bg-green-500 shadow-[0_0_10px_#22c55e]'
-                          : isInProgress
-                            ? 'bg-red-500 shadow-[0_0_10px_#ef4444]'
-                            : 'bg-zinc-700'
-                      }`}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* Node Details */}
-                <div className="flex-1 flex flex-col min-w-0 pt-1">
-                  <div className="mb-1.5 flex items-center justify-between gap-2">
-                    <span className={`rounded border px-1.5 py-0.5 text-[8px] font-black tracking-widest uppercase ${
-                      isCompleted
-                        ? 'border-green-500/30 bg-green-500/10 text-green-500'
-                        : isInProgress
-                          ? 'border-red-500/30 bg-red-500/10 text-red-500'
-                          : 'border-white/5 bg-zinc-800 text-gray-500'
-                    }`}>
-                      {node.status.replace('_', ' ')}
-                    </span>
-                    <span className="text-[9px] font-bold text-zinc-600">NODE_0{node.id}</span>
-                  </div>
-                  <h3 className="text-base font-black tracking-tight text-white uppercase truncate">
-                    {node.title}
-                  </h3>
-                  <p className="mt-1 text-xs leading-normal font-light text-zinc-400">
-                    {node.desc}
-                  </p>
-                  
-                  {activeNode.id === node.id && (
-                    <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-200">
-                      <button
-                        className={`w-full py-3.5 text-[9px] font-black tracking-widest uppercase transition-all rounded-lg min-h-[44px] flex items-center justify-center ${
-                          isLocked
-                            ? 'cursor-not-allowed bg-zinc-900 text-gray-600 border border-white/5'
-                            : 'bg-red-600 text-white hover:bg-red-500 active:scale-95'
-                        }`}
-                        disabled={isLocked}
-                      >
-                        {isCompleted
-                          ? 'Review Protocol'
-                          : isInProgress
-                            ? 'Initiate Node'
-                            : 'Node Locked'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-12 max-w-2xl px-8 text-center">
-          <p className="border-t border-white/5 pt-8 text-xs font-light tracking-widest text-gray-600 uppercase">
-            Interactive Roadmap visualized in real-time. Progress synced to your encrypted operator
-            profile. Reach <span className="font-bold text-red-500">Expert Tier</span> to unlock
-            dark-mode advanced governance modules.
-          </p>
-        </div>
+    <div className="mx-auto min-h-[calc(100vh-80px)] max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mb-10">
+        <h1 className="mb-3 text-4xl font-black tracking-tighter text-white uppercase">
+          Interactive <span className="text-[var(--brand)]">Roadmap</span>
+        </h1>
+        <p className="max-w-2xl text-sm leading-relaxed text-gray-400">
+          Visualize your learning journey through structured levels. Track
+          completed modules, see what&apos;s available next, and navigate your
+          curriculum path.
+        </p>
       </div>
+
+      {loading ? (
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-72 rounded-xl" />
+          <div className="flex min-h-[500px] items-center justify-center rounded-2xl border border-white/5">
+            <div className="flex flex-col items-center gap-4">
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="h-4 w-64" />
+              <Skeleton className="h-64 w-96 rounded-xl" />
+            </div>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 rounded-2xl border border-red-500/20 bg-red-500/5 p-8">
+          <p className="text-red-400">{error}</p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="rounded-xl bg-red-600 px-6 py-3 text-xs font-bold tracking-widest text-white uppercase hover:bg-red-500"
+          >
+            Retry
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="mb-8">
+            <label
+              htmlFor="course-select"
+              className="mb-2 block text-xs font-semibold tracking-widest text-gray-500 uppercase"
+            >
+              Select Course
+            </label>
+            <select
+              id="course-select"
+              value={selectedCourseId ?? ''}
+              onChange={(e) => setSelectedCourseId(e.target.value || null)}
+              className="w-full max-w-xs rounded-xl border border-white/10 bg-zinc-900 px-4 py-3 text-sm text-white transition focus:border-[var(--brand)] focus:outline-none"
+              aria-label="Select a course to view its roadmap"
+            >
+              {courses.map((course) => (
+                <option key={course.id} value={course.id}>
+                  {course.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <RoadmapView course={selectedCourse} key={selectedCourseId} />
+        </>
+      )}
     </div>
   );
 }
