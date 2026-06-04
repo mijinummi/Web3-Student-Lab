@@ -1,4 +1,2 @@
-
-import dynamic from 'next/dynamic';
-const AdminContentClient = dynamic(() => import('./AdminContentClient'), { ssr: false });
-export default function Page() { return <AdminContentClient />; }
+export const dynamic = 'force-dynamic';
+export { default } from './AdminContentClient';

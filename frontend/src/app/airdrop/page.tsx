@@ -1,4 +1,2 @@
-
-import dynamic from 'next/dynamic';
-const AirdropClient = dynamic(() => import('./AirdropClient'), { ssr: false });
-export default function Page() { return <AirdropClient />; }
+export const dynamic = 'force-dynamic';
+export { default } from './AirdropClient';
