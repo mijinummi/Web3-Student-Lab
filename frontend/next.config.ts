@@ -14,6 +14,29 @@ const nextConfig: NextConfig = {
       ...config.resolve.alias,
     };
 
+    // Enable Module Federation host/remote configuration for micro-frontends
+    config.plugins.push(
+      new webpack.container.ModuleFederationPlugin({
+        name: 'frontend_host',
+        filename: 'remoteEntry.js',
+        exposes: {
+          './SharedUi': './src/microfrontends/shared/index.ts',
+          './LabRemote': './src/microfrontends/remote/LabRemoteModule.tsx',
+        },
+        remotes: {
+          lab_remote: 'lab_remote@http://localhost:3000/remoteEntry.js',
+        },
+        shared: {
+          react: { singleton: true, eager: false, requiredVersion: false },
+          'react-dom': { singleton: true, eager: false, requiredVersion: false },
+          zustand: { singleton: true, eager: false, requiredVersion: false },
+          d3: { singleton: true, eager: false, requiredVersion: false },
+          axios: { singleton: true, eager: false, requiredVersion: false },
+          '@stellar/stellar-sdk': { singleton: true, eager: false, requiredVersion: false },
+        },
+      })
+    );
+
     // Split chunks for better caching
     if (!config.optimization.splitChunks) {
       config.optimization.splitChunks = {};
