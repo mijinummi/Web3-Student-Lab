@@ -12,10 +12,13 @@ export const metadata: Metadata = {
 
 import Navbar from '@/components/layout/Navbar';
 import ResiliencyBanner from '@/components/layout/ResiliencyBanner';
+import { OfflineNotification } from '@/components/notifications/OfflineNotification';
+import { OfflineReadyNotification } from '@/components/notifications/OfflineReadyNotification';
 import { ToastContainer } from '@/components/notifications/ToastContainer';
+import { OfflineSyncHandler } from '@/components/OfflineSyncHandler';
 import { NotificationProvider } from '@/contexts/NotificationContext';
-import { I18nProvider } from '@/i18n';
 import { Web3OnboardingProvider } from '@/contexts/Web3OnboardingContext';
+import { I18nProvider } from '@/i18n';
 
 export default function RootLayout({
   children,
@@ -55,6 +58,9 @@ export default function RootLayout({
                     </a>
                     <Navbar />
                     <ResiliencyBanner />
+                    <OfflineSyncHandler />
+                    <OfflineNotification />
+                    <OfflineReadyNotification />
                     <main id="main-content" className="flex-grow">
                       {children}
                     </main>

@@ -13,10 +13,7 @@ export default defineConfig({
         branches: 85,
         statements: 90,
       },
-      include: [
-        'src/lib/p2p-crypto.ts',
-        'src/lib/web3-transaction-simulator.ts',
-      ],
+      include: ['src/**/*.{ts,tsx}'],
     },
   },
 });
