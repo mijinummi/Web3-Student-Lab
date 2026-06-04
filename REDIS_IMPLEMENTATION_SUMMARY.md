@@ -62,12 +62,7 @@ REDIS_MODE=cluster      # Distributed across multiple nodes
 - Transparent caching of Soroban RPC responses
 - Automatic cache key generation from method + params
 - Per-method TTL configuration
-- Cache hit/miss headers in responses
 
-
-#### **4. Distributed Cache Warming**
-- Proactive population of high-frequency data
-- Configurable warming intervals
 - User, course, and blockchain-specific strategies
 - No cold-start performance hits
 

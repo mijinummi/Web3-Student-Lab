@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import 'fake-indexeddb/auto';
 import { afterEach, vi } from 'vitest';
+import { cleanup } from '@testing-library/react';
 
 Object.defineProperty(window, 'crypto', {
   configurable: true,
@@ -15,6 +16,7 @@ Object.defineProperty(window.navigator, 'clipboard', {
 });
 
 afterEach(() => {
+  cleanup();
   vi.restoreAllMocks();
   indexedDB.deleteDatabase('web3-student-lab-p2p-crypto');
 });

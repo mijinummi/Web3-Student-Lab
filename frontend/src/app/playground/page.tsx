@@ -11,6 +11,7 @@ import { SyncManager } from '@/lib/storage/SyncManager';
 import { useState, useEffect, useMemo } from 'react';
 import { WithSkeleton } from '@/components/ui/WithSkeleton';
 import { EditorSkeleton } from '@/components/ui/skeletons/EditorSkeleton';
+import { useTutorial } from '@/contexts/TutorialContext';
 
 const INITIAL_TREE: FileTreeNode[] = [
   {
@@ -84,6 +85,7 @@ export default function PlaygroundPage() {
   const [output, setOutput] = useState('');
   const [isCompiling, setIsCompiling] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const { startTutorial } = useTutorial();
   const [treeData, setTreeData] = useState<FileTreeNode[]>(INITIAL_TREE);
   const [activeFilePath, setActiveFilePath] = useState('/src/contract.rs');
   const [provider] = useState(() => new CollaborationProvider('main-lab-session'));
@@ -191,7 +193,7 @@ export default function PlaygroundPage() {
   return (
     <div className="min-h-[calc(100vh-80px)] bg-black p-6 font-mono text-white md:p-12">
       <div className="mx-auto flex h-full max-w-7xl flex-col">
-        <div className="mb-12 flex items-end justify-between border-b border-white/10 pb-6">
+        <div className="mb-12 flex items-end justify-between border-b border-white/10 pb-6" data-tour-step="playground-header">
           <div>
             <h1 className="mb-2 text-4xl font-black tracking-tighter uppercase">
               Soroban <span className="text-red-500">Playground</span>
@@ -200,16 +202,23 @@ export default function PlaygroundPage() {
               Experimental Smart Contract Runtime v1.0.4
             </p>
           </div>
-          <div className="hidden text-right md:block">
+          <div className="hidden items-center gap-4 md:flex">
             <span className="animate-pulse text-[10px] font-bold tracking-widest text-green-500 uppercase">
               ● Network Active: Stellar Testnet
             </span>
+            <button
+              onClick={() => startTutorial('playground')}
+              className="rounded border border-red-600/30 bg-red-600/10 px-4 py-2 text-[10px] font-black tracking-widest text-red-500 uppercase transition-colors hover:bg-red-600/20"
+              aria-label="Start playground tutorial"
+            >
+              ? Tutorial
+            </button>
           </div>
         </div>
 
         <div className="grid flex-grow grid-cols-1 gap-12 lg:grid-cols-2">
           {/* Editor Placeholder */}
-          <div className="relative flex min-h-[600px] flex-col rounded-3xl border border-white/10 bg-zinc-950 p-8 shadow-2xl">
+          <div className="relative flex min-h-[600px] flex-col rounded-3xl border border-white/10 bg-zinc-950 p-8 shadow-2xl" data-tour-step="playground-editor">
             <div className="mb-6 flex items-center justify-between gap-2 border-b border-white/5 pb-4">
               <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-red-500"></div>
@@ -226,7 +235,7 @@ export default function PlaygroundPage() {
               </div>
             </div>
 
-            <div className="mb-4">
+            <div className="mb-4" data-tour-step="playground-file-tree">
               <div className="mb-2">
                 <OfflineIndicator
                   isOnline={isOnline}
@@ -258,6 +267,7 @@ export default function PlaygroundPage() {
             <button
               onClick={handleCompile}
               disabled={isCompiling}
+              data-tour-step="playground-compile-btn"
               className={`mt-4 rounded-xl py-4 text-xs font-black tracking-[0.2em] uppercase transition-all ${
                 isCompiling
                   ? 'cursor-not-allowed bg-zinc-800 text-gray-500'
@@ -269,7 +279,7 @@ export default function PlaygroundPage() {
           </div>
 
           {/* Terminal Output */}
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6" data-tour-step="playground-output">
             <div className="group relative flex-grow overflow-hidden rounded-3xl border border-white/10 bg-black p-8 shadow-inner">
               <div className="absolute top-0 left-0 h-1 w-full bg-red-600/30"></div>
               <h3 className="mb-6 text-[10px] font-black tracking-widest text-gray-600 uppercase">

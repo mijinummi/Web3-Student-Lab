@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTutorial } from '@/contexts/TutorialContext';
 
 const NODES = [
   {
@@ -47,6 +48,7 @@ const NODES = [
 
 export default function RoadmapPage() {
   const [activeNode, setActiveNode] = useState(NODES[1]);
+  const { startTutorial } = useTutorial();
 
   return (
     <div className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-black p-6 font-mono text-white md:p-12">
@@ -55,16 +57,25 @@ export default function RoadmapPage() {
 
       <div className="mx-auto flex h-full max-w-7xl flex-col items-center">
         {/* Header */}
-        <div className="mb-16 w-full border-b border-red-600/20 pb-8 text-center">
-          <h1 className="mb-2 text-4xl font-black tracking-tighter uppercase">
-            Technical <span className="text-red-500">Roadmap</span>
-          </h1>
+        <div className="mb-16 w-full border-b border-red-600/20 pb-8 text-center" data-tour-step="roadmap-header">
+          <div className="mb-4 flex items-center justify-center gap-4">
+            <h1 className="text-4xl font-black tracking-tighter uppercase">
+              Technical <span className="text-red-500">Roadmap</span>
+            </h1>
+            <button
+              onClick={() => startTutorial('roadmap')}
+              className="rounded border border-red-600/30 bg-red-600/10 px-4 py-2 text-[10px] font-black tracking-widest text-red-500 uppercase transition-colors hover:bg-red-600/20"
+              aria-label="Start roadmap tutorial"
+            >
+              ? Tutorial
+            </button>
+          </div>
           <p className="text-xs tracking-[0.3em] text-gray-500 uppercase">
             Module Hierarchy & Skill Acquisition Tree
           </p>
         </div>
 
-        <div className="relative flex aspect-[4/5] w-full max-w-4xl items-center justify-center overflow-hidden rounded-[3rem] border border-white/5 bg-zinc-950/20 p-12 shadow-inner md:aspect-video">
+        <div className="relative flex aspect-[4/5] w-full max-w-4xl items-center justify-center overflow-hidden rounded-[3rem] border border-white/5 bg-zinc-950/20 p-12 shadow-inner md:aspect-video" data-tour-step="roadmap-nodes">
           {/* Connecting Lines (SVG) */}
           <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-20">
             <line
@@ -150,7 +161,7 @@ export default function RoadmapPage() {
           ))}
 
           {/* Active Detail Overlay */}
-          <div className="animate-in fade-in slide-in-from-bottom-4 absolute right-10 bottom-10 left-10 rounded-2xl border border-red-500/30 bg-zinc-950 p-6 shadow-2xl backdrop-blur-xl md:right-10 md:left-auto md:w-80">
+          <div className="animate-in fade-in slide-in-from-bottom-4 absolute right-10 bottom-10 left-10 rounded-2xl border border-red-500/30 bg-zinc-950 p-6 shadow-2xl backdrop-blur-xl md:right-10 md:left-auto md:w-80" data-tour-step="roadmap-detail">
             <div className="mb-4 flex items-start justify-between">
               <span
                 className={`rounded border px-2 py-0.5 text-[9px] font-black tracking-widest uppercase ${
@@ -172,6 +183,7 @@ export default function RoadmapPage() {
               {activeNode.desc}
             </p>
             <button
+              data-tour-step="roadmap-action-btn"
               className={`w-full py-3 text-[10px] font-black tracking-widest uppercase transition-all ${
                 activeNode.status === 'LOCKED'
                   ? 'cursor-not-allowed bg-zinc-800 text-gray-600'

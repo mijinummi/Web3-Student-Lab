@@ -16,6 +16,7 @@ import { ToastContainer } from '@/components/notifications/ToastContainer';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { I18nProvider } from '@/i18n';
 import { Web3OnboardingProvider } from '@/contexts/Web3OnboardingContext';
+import { TutorialProvider } from '@/contexts/TutorialContext';
 
 export default function RootLayout({
   children,
@@ -50,15 +51,17 @@ export default function RootLayout({
               <I18nProvider>
                 <NotificationProvider>
                   <Web3OnboardingProvider>
-                    <a href="#main-content" className="skip-to-content">
-                      Skip to main content
-                    </a>
-                    <Navbar />
-                    <ResiliencyBanner />
-                    <main id="main-content" className="flex-grow">
-                      {children}
-                    </main>
-                    <ToastContainer />
+                    <TutorialProvider>
+                      <a href="#main-content" className="skip-to-content">
+                        Skip to main content
+                      </a>
+                      <Navbar />
+                      <ResiliencyBanner />
+                      <main id="main-content" className="flex-grow">
+                        {children}
+                      </main>
+                      <ToastContainer />
+                    </TutorialProvider>
                   </Web3OnboardingProvider>
                 </NotificationProvider>
               </I18nProvider>
