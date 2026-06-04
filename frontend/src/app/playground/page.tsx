@@ -6,11 +6,7 @@ import { OfflineIndicator } from '@/components/storage/OfflineIndicator';
 import { TerminalPanel } from '@/components/terminal/TerminalPanel';
 import { WithSkeleton } from '@/components/ui/WithSkeleton';
 import { EditorSkeleton } from '@/components/ui/skeletons/EditorSkeleton';
-import { CollaborationProvider } from '@/lib/collaboration/YjsProvider';
-import { FilePresenceManager } from '@/lib/explorer/FilePresence';
-import { DatabaseManager } from '@/lib/storage/DatabaseManager';
-import { SyncManager } from '@/lib/storage/SyncManager';
-import { useEffect, useMemo, useState } from 'react';
+import { useTutorial } from '@/contexts/TutorialContext';
 
 const INITIAL_TREE: FileTreeNode[] = [
   {
@@ -87,6 +83,7 @@ export default function PlaygroundPage() {
   const [output, setOutput] = useState('');
   const [isCompiling, setIsCompiling] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const { startTutorial } = useTutorial();
   const [treeData, setTreeData] = useState<FileTreeNode[]>(INITIAL_TREE);
   const [activeFilePath, setActiveFilePath] = useState('/src/contract.rs');
   const [provider] = useState(() => new CollaborationProvider('main-lab-session'));
@@ -208,7 +205,7 @@ export default function PlaygroundPage() {
   return (
     <div className="min-h-[calc(100vh-80px)] bg-black p-6 font-mono text-white md:p-12">
       <div className="mx-auto flex h-full max-w-7xl flex-col">
-        <div className="mb-12 flex items-end justify-between border-b border-white/10 pb-6">
+        <div className="mb-12 flex items-end justify-between border-b border-white/10 pb-6" data-tour-step="playground-header">
           <div>
             <h1 className="mb-2 text-4xl font-black tracking-tighter uppercase">
               Soroban <span className="text-red-500">Playground</span>
@@ -217,10 +214,17 @@ export default function PlaygroundPage() {
               Experimental Smart Contract Runtime v1.0.4
             </p>
           </div>
-          <div className="hidden text-right md:block">
+          <div className="hidden items-center gap-4 md:flex">
             <span className="animate-pulse text-[10px] font-bold tracking-widest text-green-500 uppercase">
               ● Network Active: Stellar Testnet
             </span>
+            <button
+              onClick={() => startTutorial('playground')}
+              className="rounded border border-red-600/30 bg-red-600/10 px-4 py-2 text-[10px] font-black tracking-widest text-red-500 uppercase transition-colors hover:bg-red-600/20"
+              aria-label="Start playground tutorial"
+            >
+              ? Tutorial
+            </button>
           </div>
         </div>
 
@@ -250,17 +254,13 @@ export default function PlaygroundPage() {
 
         <div className="grid flex-grow grid-cols-1 gap-12 lg:grid-cols-2">
           {/* Editor Placeholder */}
-          <div className={`relative flex min-h-[600px] flex-col rounded-3xl border border-white/10 bg-zinc-950 p-4 sm:p-8 shadow-2xl lg:flex ${
-            activeTab === 'editor' ? 'flex' : 'hidden lg:flex'
-          }`}>
-            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-white/5 pb-4">
-              <div className="flex items-center gap-2 overflow-hidden">
-                <div className="flex gap-1.5 flex-shrink-0">
-                  <div className="h-3 w-3 rounded-full bg-red-500"></div>
-                  <div className="h-3 w-3 rounded-full bg-zinc-700"></div>
-                  <div className="h-3 w-3 rounded-full bg-zinc-700"></div>
-                </div>
-                <span className="ml-2 text-[10px] font-bold tracking-widest text-gray-500 uppercase truncate">
+          <div className="relative flex min-h-[600px] flex-col rounded-3xl border border-white/10 bg-zinc-950 p-8 shadow-2xl" data-tour-step="playground-editor">
+            <div className="mb-6 flex items-center justify-between gap-2 border-b border-white/5 pb-4">
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                <div className="h-3 w-3 rounded-full bg-zinc-700"></div>
+                <div className="h-3 w-3 rounded-full bg-zinc-700"></div>
+                <span className="ml-4 text-[10px] font-bold tracking-widest text-gray-500 uppercase">
                   {activeFilePath}
                 </span>
               </div>
@@ -271,7 +271,7 @@ export default function PlaygroundPage() {
               </div>
             </div>
 
-            <div className="mb-4">
+            <div className="mb-4" data-tour-step="playground-file-tree">
               <div className="mb-2">
                 <OfflineIndicator
                   isOnline={isOnline}
@@ -303,7 +303,8 @@ export default function PlaygroundPage() {
             <button
               onClick={handleCompile}
               disabled={isCompiling}
-              className={`mt-4 rounded-xl py-4 text-xs font-black tracking-[0.2em] uppercase transition-all min-h-[44px] flex items-center justify-center ${
+              data-tour-step="playground-compile-btn"
+              className={`mt-4 rounded-xl py-4 text-xs font-black tracking-[0.2em] uppercase transition-all ${
                 isCompiling
                   ? 'cursor-not-allowed bg-zinc-800 text-gray-500'
                   : 'bg-red-600 text-white hover:bg-red-500 active:scale-[0.98]'
@@ -314,10 +315,8 @@ export default function PlaygroundPage() {
           </div>
 
           {/* Terminal Output */}
-          <div className={`flex flex-col gap-6 lg:flex ${
-            activeTab === 'output' ? 'flex' : 'hidden lg:flex'
-          }`}>
-            <div className="group relative flex-grow overflow-hidden rounded-3xl border border-white/10 bg-black p-4 sm:p-8 shadow-inner">
+          <div className="flex flex-col gap-6" data-tour-step="playground-output">
+            <div className="group relative flex-grow overflow-hidden rounded-3xl border border-white/10 bg-black p-8 shadow-inner">
               <div className="absolute top-0 left-0 h-1 w-full bg-red-600/30"></div>
               <h3 className="mb-6 text-[10px] font-black tracking-widest text-gray-600 uppercase">
                 Execution_Output

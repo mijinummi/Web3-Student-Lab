@@ -4,6 +4,7 @@ import { NetworkGraph } from '@/components/simulator/NetworkGraph';
 import { useEffect, useState } from 'react';
 import { WithSkeleton } from '@/components/ui/WithSkeleton';
 import { GraphSkeleton } from '@/components/ui/skeletons/GraphSkeleton';
+import { useTutorial } from '@/contexts/TutorialContext';
 
 interface Transaction {
   id: string;
@@ -27,6 +28,7 @@ export default function SimulatorPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLive, setIsLive] = useState(true);
   const [isInitializing, setIsInitializing] = useState(true);
+  const { startTutorial } = useTutorial();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsInitializing(false), 1500);
@@ -92,7 +94,7 @@ export default function SimulatorPage() {
               Real-time Stellar Ledger Observer [v4.2.0]
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4" data-tour-step="simulator-controls">
             <div
               className="flex items-center gap-2 rounded border border-white/10 bg-zinc-900 px-4 py-2"
               role="status"
@@ -115,12 +117,19 @@ export default function SimulatorPage() {
             >
               {isLive ? 'Stop Sync' : 'Start Sync'}
             </button>
+            <button
+              onClick={() => startTutorial('simulator')}
+              className="rounded border border-red-600/30 bg-red-600/10 px-4 py-2 text-[10px] font-black tracking-widest text-red-500 uppercase transition-colors hover:bg-red-600/20"
+              aria-label="Start simulator tutorial"
+            >
+              ? Tutorial
+            </button>
           </div>
         </div>
 
         <div className="grid h-auto lg:h-[calc(100vh-250px)] flex-grow grid-cols-1 gap-8 lg:grid-cols-4">
           {/* Recent Ledgers */}
-          <div className="flex flex-col h-[350px] lg:h-full overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 p-6 shadow-2xl lg:col-span-1">
+          <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 p-6 shadow-2xl lg:col-span-1" data-tour-step="simulator-ledgers">
             <h2 className="mb-6 flex items-center justify-between border-b border-white/10 pb-4 text-sm font-bold tracking-widest uppercase">
               Ledger Chain
               <span className="text-[10px] font-normal text-gray-600">History [10]</span>
@@ -157,14 +166,14 @@ export default function SimulatorPage() {
           </div>
 
           {/* Network Graph Visualizer */}
-          <div className="relative flex h-[350px] md:h-[450px] lg:h-full flex-col lg:col-span-2">
+          <div className="relative flex h-full flex-col lg:col-span-2" data-tour-step="simulator-graph">
             <WithSkeleton isLoading={isInitializing} skeleton={<GraphSkeleton />}>
               <NetworkGraph transactions={transactions} />
             </WithSkeleton>
           </div>
 
           {/* Live Transaction Stream */}
-          <div className="flex flex-col h-[350px] lg:h-full overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 p-6 shadow-2xl lg:col-span-1">
+          <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 p-6 shadow-2xl lg:col-span-1" data-tour-step="simulator-tx-stream">
             <h2 className="mb-6 flex items-center justify-between border-b border-white/10 pb-4 text-sm font-bold tracking-widest uppercase">
               TX Stream
               <span className="text-[10px] font-normal text-gray-600">Memory [50]</span>
