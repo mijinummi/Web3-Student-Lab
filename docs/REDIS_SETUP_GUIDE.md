@@ -5,6 +5,7 @@
 - Docker and Docker Compose installed
 - Node.js 18+ and npm/pnpm
 - Basic understanding of Redis and Docker networking
+- **Note**: Redis version >= 6.2 is strictly recommended for full compatibility with the backend caching infrastructure.
 
 ## 🚀 Quick Start (Development)
 
