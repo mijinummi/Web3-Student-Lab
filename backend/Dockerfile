@@ -35,6 +35,7 @@ COPY --from=builder /app/backend/package*.json ./
 COPY --from=builder /app/backend/dist ./dist
 COPY --from=builder /app/backend/node_modules ./node_modules
 COPY --from=builder /app/backend/prisma ./prisma
+COPY --from=builder /app/backend/prisma.config.ts ./
 
 # Set environment variables
 ENV NODE_ENV=production
