@@ -69,7 +69,7 @@ const rules: RateLimitRule[] = [
     name: 'generator',
     priority: 70,
     match: (path) => path.includes('/generator'),
-    profile: { burst: { windowMs: 1000, max: 5 }, sustained: { windowMs: 60_000, max: 30 } },
+    profile: { burst: { windowMs: 1000, max: 50 }, sustained: { windowMs: 60_000, max: 200 } },
   },
   {
     name: 'export',
