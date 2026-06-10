@@ -3,6 +3,15 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { WalletProvider } from '@/contexts/WalletContext';
 import { SkeletonThemeWrapper } from '@/components/ui/SkeletonThemeWrapper';
 import { I18nProvider } from '@/i18n';
+import { KeyboardShortcutsProvider } from '@/components/keyboard/KeyboardShortcutsProvider';
+import Navbar from '@/components/layout/Navbar';
+import ResiliencyBanner from '@/components/layout/ResiliencyBanner';
+import RenderWarningModal from '@/components/layout/RenderWarningModal';
+import { CourseNotificationListener, ToastContainer } from '@/components/notifications';
+import { NotificationProvider } from '@/contexts/NotificationContext';
+import { Web3OnboardingProvider } from '@/contexts/Web3OnboardingContext';
+import { TutorialProvider } from '@/contexts/TutorialContext';
+import { SkipLink } from '@/components/ui/SkipLink';
 import type { Metadata } from 'next';
 import './globals.css';
 
@@ -11,15 +20,6 @@ export const metadata: Metadata = {
   description:
     'An open-source educational platform for blockchain, smart contracts, open-source collaboration, and hackathon project development.',
 };
-
-import { KeyboardShortcutsProvider } from '@/components/keyboard/KeyboardShortcutsProvider';
-import Navbar from '@/components/layout/Navbar';
-import ResiliencyBanner from '@/components/layout/ResiliencyBanner';
-import { CourseNotificationListener, ToastContainer } from '@/components/notifications';
-import { NotificationProvider } from '@/contexts/NotificationContext';
-import { Web3OnboardingProvider } from '@/contexts/Web3OnboardingContext';
-import { TutorialProvider } from '@/contexts/TutorialContext';
-import { SkipLink } from '@/components/ui/SkipLink';
 
 export default function RootLayout({
   children,
@@ -64,6 +64,7 @@ export default function RootLayout({
                         />
                         <Navbar />
                         <ResiliencyBanner />
+                        <RenderWarningModal />
                         <main id="main-content" className="flex-grow outline-none" tabIndex={-1}>
                           {children}
                         </main>
