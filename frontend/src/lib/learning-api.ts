@@ -1,6 +1,7 @@
 import apiClient from './api-client';
 import { apiRequestCache } from './api-cache';
 import type { ProgressData } from './types/roadmap';
+import { queueLessonProgressCompletion } from './offline-sync';
 
 export interface CourseCurriculum {
   id: string;
@@ -118,6 +119,13 @@ export const learningAPI = {
       status: string;
     }>
   ): Promise<LearningProgressResponse | null> => {
+    if (typeof window !== 'undefined' && !navigator.onLine && data.completedLessons?.length) {
+      await queueLessonProgressCompletion({
+        courseId,
+        lessonId: data.completedLessons[data.completedLessons.length - 1],
+      });
+    }
+
     try {
       const response = await apiClient.patch(
         `/learning/courses/${courseId}/progress`,

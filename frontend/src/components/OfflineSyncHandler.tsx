@@ -1,6 +1,6 @@
 'use client';
 
-import { flushQueuedRequests, registerOnlineSync } from '@/lib/offline-sync';
+import { flushOfflineSyncQueue, registerOnlineSync } from '@/lib/offline-sync';
 import { useEffect } from 'react';
 
 export function OfflineSyncHandler() {
@@ -8,7 +8,7 @@ export function OfflineSyncHandler() {
     const cleanup = registerOnlineSync();
 
     if (navigator.onLine) {
-      flushQueuedRequests().catch((error) => {
+      flushOfflineSyncQueue().catch((error) => {
         console.error('[OfflineSyncHandler] Failed to flush queued requests:', error);
       });
     }

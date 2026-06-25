@@ -6,6 +6,10 @@ const CodeEditor = dynamic(() => import('@/components/playground/CodeEditor').th
   ssr: false,
 });
 import { OfflineIndicator } from '@/components/storage/OfflineIndicator';
+import {
+  CompileOutputTerminal,
+  type CompileLogEntry,
+} from '@/components/terminal/CompileOutputTerminal';
 import { TerminalPanel } from '@/components/terminal/TerminalPanel';
 import { WithSkeleton } from '@/components/ui/WithSkeleton';
 import { EditorSkeleton } from '@/components/ui/skeletons/EditorSkeleton';
@@ -15,6 +19,7 @@ import { CollaborationProvider } from '@/lib/collaboration/YjsProvider';
 import { DatabaseManager } from '@/lib/storage/DatabaseManager';
 import { SyncManager } from '@/lib/storage/SyncManager';
 import { FilePresenceManager } from '@/lib/explorer/FilePresence';
+import { Settings, X } from 'lucide-react';
 
 const INITIAL_TREE: FileTreeNode[] = [
   {
@@ -88,8 +93,14 @@ function moveFileNode(
 }
 
 export default function PlaygroundPage() {
-  const [output, setOutput] = useState('');
+  const [compileLogs, setCompileLogs] = useState<CompileLogEntry[]>([]);
   const [isCompiling, setIsCompiling] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [editorSettings, setEditorSettings] = useState({
+    fontSize: 14,
+    tabSize: 2,
+    vimBindings: false,
+  });
   const [isInitializing, setIsInitializing] = useState(true);
   const { startTutorial } = useTutorial();
   const [treeData, setTreeData] = useState<FileTreeNode[]>(INITIAL_TREE);
@@ -178,11 +189,38 @@ export default function PlaygroundPage() {
 
   const handleCompile = useCallback(() => {
     setIsCompiling(true);
-    // Simulate compilation delay
+    const stamp = () => new Date().toLocaleTimeString();
+    setCompileLogs([
+      {
+        id: crypto.randomUUID?.() ?? `${Date.now()}-compile-start`,
+        level: 'info',
+        timestamp: stamp(),
+        message: `soroban contract build --file ${activeFilePath}`,
+      },
+      {
+        id: crypto.randomUUID?.() ?? `${Date.now()}-compile-check`,
+        level: 'info',
+        timestamp: stamp(),
+        message: 'Checking Rust target wasm32-unknown-unknown...',
+      },
+    ]);
     setTimeout(() => {
-      setOutput(
-        `✅ Compilation successful!\n📦 WASM size: 4.2KB\n🗂 Active file: ${activeFilePath}\n🚀 Contract ready for simulation.\n🧾 Notarization: register_hash / verify / history_for_owner\n💳 Gateway: process_payment / refund_payment / open_dispute / resolve_dispute`
-      );
+      setCompileLogs((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID?.() ?? `${Date.now()}-compile-success`,
+          level: 'success',
+          timestamp: stamp(),
+          message: 'Compilation successful. WASM size: 4.2KB',
+        },
+        {
+          id: crypto.randomUUID?.() ?? `${Date.now()}-compile-ready`,
+          level: 'success',
+          timestamp: stamp(),
+          message:
+            'Contract ready for simulation. Exports: register_hash, verify, history_for_owner, process_payment, refund_payment.',
+        },
+      ]);
       setIsCompiling(false);
     }, 1500);
   }, [activeFilePath]);
@@ -277,6 +315,15 @@ export default function PlaygroundPage() {
                   Collaborative Mode
                 </span>
               </div>
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(true)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-zinc-300 transition hover:border-red-500/40 hover:text-white"
+                aria-label="Open editor settings"
+                title="Editor settings"
+              >
+                <Settings className="h-4 w-4" />
+              </button>
             </div>
 
             <div className="mb-4" data-tour-step="playground-file-tree">
@@ -304,7 +351,11 @@ export default function PlaygroundPage() {
 
             <div className="relative flex flex-grow flex-col overflow-hidden rounded-xl border border-white/5">
               <WithSkeleton isLoading={isInitializing} skeleton={<EditorSkeleton />}>
-                <CodeEditor roomName="main-lab-session" collaborationProvider={provider} />
+                <CodeEditor
+                  roomName="main-lab-session"
+                  collaborationProvider={provider}
+                  settings={editorSettings}
+                />
               </WithSkeleton>
             </div>
 
@@ -324,27 +375,7 @@ export default function PlaygroundPage() {
 
           {/* Terminal Output */}
           <div className="flex flex-col gap-6" data-tour-step="playground-output">
-            <div className="group relative flex-grow overflow-hidden rounded-3xl border border-white/10 bg-black p-8 shadow-inner">
-              <div className="absolute top-0 left-0 h-1 w-full bg-red-600/30"></div>
-              <h3 className="mb-6 text-[10px] font-black tracking-widest text-gray-600 uppercase">
-                Execution_Output
-              </h3>
-              <pre className="font-mono text-xs leading-loose whitespace-pre-wrap text-red-500/80">
-                {output || '> Initializing environment...\n> Awaiting input signal...'}
-              </pre>
-              {isCompiling && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-all">
-                  <div className="flex flex-col items-center">
-                    <div className="mb-4 h-1 w-12 overflow-hidden rounded-full bg-zinc-800">
-                      <div className="h-full w-1/2 animate-[loading_1s_infinite] bg-red-600"></div>
-                    </div>
-                    <span className="text-[10px] font-black tracking-widest text-gray-500 uppercase">
-                      Processing WASM Bytecode
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
+            <CompileOutputTerminal logs={compileLogs} isCompiling={isCompiling} />
 
             <TerminalPanel />
 
@@ -362,6 +393,89 @@ export default function PlaygroundPage() {
           </div>
         </div>
       </div>
+      {settingsOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="editor-settings-title"
+        >
+          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-zinc-950 p-6 shadow-2xl">
+            <div className="mb-6 flex items-center justify-between">
+              <h2
+                id="editor-settings-title"
+                className="text-sm font-black tracking-widest text-white uppercase"
+              >
+                Editor Settings
+              </h2>
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(false)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-zinc-400 transition hover:text-white"
+                aria-label="Close editor settings"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-6">
+              <label className="block">
+                <span className="mb-2 flex items-center justify-between text-xs font-bold tracking-widest text-zinc-400 uppercase">
+                  Font Size <span className="text-white">{editorSettings.fontSize}px</span>
+                </span>
+                <input
+                  type="range"
+                  min={12}
+                  max={22}
+                  step={1}
+                  value={editorSettings.fontSize}
+                  onChange={(event) =>
+                    setEditorSettings((prev) => ({
+                      ...prev,
+                      fontSize: Number(event.target.value),
+                    }))
+                  }
+                  className="h-2 w-full cursor-pointer accent-red-600"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-2 flex items-center justify-between text-xs font-bold tracking-widest text-zinc-400 uppercase">
+                  Tab Size <span className="text-white">{editorSettings.tabSize}</span>
+                </span>
+                <input
+                  type="range"
+                  min={2}
+                  max={8}
+                  step={2}
+                  value={editorSettings.tabSize}
+                  onChange={(event) =>
+                    setEditorSettings((prev) => ({
+                      ...prev,
+                      tabSize: Number(event.target.value),
+                    }))
+                  }
+                  className="h-2 w-full cursor-pointer accent-red-600"
+                />
+              </label>
+              <label className="flex items-center justify-between rounded-xl border border-white/10 bg-black/30 px-4 py-3">
+                <span className="text-xs font-bold tracking-widest text-zinc-300 uppercase">
+                  Vim Bindings
+                </span>
+                <input
+                  type="checkbox"
+                  checked={editorSettings.vimBindings}
+                  onChange={(event) =>
+                    setEditorSettings((prev) => ({
+                      ...prev,
+                      vimBindings: event.target.checked,
+                    }))
+                  }
+                  className="h-5 w-5 accent-red-600"
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

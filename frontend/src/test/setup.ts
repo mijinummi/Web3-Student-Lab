@@ -2,7 +2,7 @@ import '@testing-library/jest-dom/vitest';
 import 'fake-indexeddb/auto';
 import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
-import { cleanup } from '@testing-library/react';
+import { webcrypto } from 'node:crypto';
 
 // Polyfill window.crypto with Node's webcrypto so crypto.subtle is available in jsdom
 Object.defineProperty(window, 'crypto', {

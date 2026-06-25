@@ -8,6 +8,7 @@ import Navbar from '@/components/layout/Navbar';
 import ResiliencyBanner from '@/components/layout/ResiliencyBanner';
 import RenderWarningModal from '@/components/layout/RenderWarningModal';
 import { CourseNotificationListener, ToastContainer } from '@/components/notifications';
+import { OfflineSyncHandler } from '@/components/OfflineSyncHandler';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { Web3OnboardingProvider } from '@/contexts/Web3OnboardingContext';
 import { TutorialProvider } from '@/contexts/TutorialContext';
@@ -65,6 +66,7 @@ export default function RootLayout({
                         <Navbar />
                         <ResiliencyBanner />
                         <RenderWarningModal />
+                        <OfflineSyncHandler />
                         <main id="main-content" className="flex-grow outline-none" tabIndex={-1}>
                           {children}
                         </main>
