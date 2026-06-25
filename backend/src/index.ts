@@ -1,10 +1,7 @@
 // @ts-nocheck
-import config from './config/env.config.js';
 import cors from 'cors';
 import express, { Request, Response } from 'express';
 import { createServer } from 'http';
-import { errorHandler } from './middleware/errorHandler.js';
-import { initializeSentry, getSentryRequestHandler, getSentryErrorHandler } from './utils/sentry.js';
 import swaggerUi from 'swagger-ui-express';
 import blockHeaderListener from './cache/BlockHeaderListener.js';
 import cacheMetrics from './cache/CacheMetrics.js';
@@ -12,21 +9,22 @@ import cacheWarmer from './cache/CacheWarmer.js';
 import distributedCacheManager from './cache/DistributedCacheManager.js';
 import redisClient from './cache/RedisClient.js';
 import { rpcCacheHeadersMiddleware, rpcCacheMiddleware } from './cache/RPCInterceptor.js';
+import config from './config/env.config.js';
+import { setRateLimitEnvOverrides } from './config/rateLimit.config.js';
 import { swaggerSpec } from './config/swagger.js';
 import prisma from './db/index.js';
 import { dbRoutingMiddleware } from './middleware/dbRouting.js';
 import { decryptionMiddleware } from './middleware/encryptionMiddleware.js';
+import { errorHandler } from './middleware/errorHandler.js';
 import { rateLimiter } from './middleware/rateLimiter.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { requireWorkspaceMiddleware } from './middleware/WorkspaceContext.js';
 import freelanceRoute from './routes/freelance.js';
 import routes from './routes/index.js';
 import { startWebhookWorker, stopWebhookWorker } from './services/webhooks/index.js';
-import { validateEnvironment } from './utils/checkEnv.js';
 import logger from './utils/logger.js';
 import { pubClient, redisConnection, subClient } from './utils/redis.js';
-import swaggerUi from 'swagger-ui-express';
-import { setRateLimitEnvOverrides } from './config/rateLimit.config.js';
+import { getSentryErrorHandler, getSentryRequestHandler, initializeSentry } from './utils/sentry.js';
 import { initializeWebSocket } from './websocket/WebSocketServer.js';
 
 // Load environment variables
@@ -74,6 +72,14 @@ setRateLimitEnvOverrides({
   },
   'auth-register': {
     burst: { windowMs: 1000, max: config.rateLimiting.registerBurstMax },
+    sustained: { windowMs: 60000, max: config.rateLimiting.defaultSustainedMax },
+  },
+  'quiz-submission': {
+    burst: { windowMs: 1000, max: config.rateLimiting.quizSubmissionBurstMax },
+    sustained: { windowMs: 60000, max: config.rateLimiting.defaultSustainedMax },
+  },
+  'playground-compile': {
+    burst: { windowMs: 1000, max: config.rateLimiting.playgroundCompileBurstMax },
     sustained: { windowMs: 60000, max: config.rateLimiting.defaultSustainedMax },
   },
 });

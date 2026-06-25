@@ -33,6 +33,7 @@ export const config = {
   },
   db: {
     url: getEnvVar('DATABASE_URL'), // Required
+    readReplicaUrl: getEnvVar('DATABASE_READ_REPLICA_URL'), // Optional - falls back to primary if not set
   },
   redis: {
     url: getEnvVar('REDIS_URL', 'redis://localhost:6379'),
@@ -67,8 +68,10 @@ export const config = {
     adminSustainedMax: parseInt(getEnvVar('RATE_LIMIT_ADMIN_SUSTAINED_MAX', '2000'), 10),
     loginBurstMax: parseInt(getEnvVar('RATE_LIMIT_LOGIN_BURST_MAX', '5'), 10),
     registerBurstMax: parseInt(getEnvVar('RATE_LIMIT_REGISTER_BURST_MAX', '3'), 10),
+    quizSubmissionBurstMax: parseInt(getEnvVar('RATE_LIMIT_QUIZ_BURST_MAX', '10'), 10),
+    playgroundCompileBurstMax: parseInt(getEnvVar('RATE_LIMIT_PLAYGROUND_BURST_MAX', '5'), 10),
   },
-  
+
   /**
    * Helper to safely log configuration without exposing secrets
    */
