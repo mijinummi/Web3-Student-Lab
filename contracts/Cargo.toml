@@ -3,11 +3,26 @@ name = "soroban-certificate-contract"
 version = "0.0.0"
 edition = "2021"
 
+[workspace]
+members = [
+    ".",
+    "proxy",
+    "implementation_v1",
+    "implementation_v2",
+    "smart_vault",
+    "payment_streaming",
+    "commit_reveal_rng",
+    "quadratic_funding",
+    "multisig_wallet_timelock"
+]
+
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-soroban-sdk = "20.0.0"
+soroban-sdk = "22.0.0"
 
-[dev_dependencies]
-soroban-sdk = { version = "20.0.0", features = ["testutils"] }
+[dev-dependencies]
+soroban-sdk = { version = "22.0.0", features = ["testutils"] }
+rand = { version = "0.8", features = ["small_rng"] }
+ed25519-dalek = { version = "2", default-features = false, features = ["std", "rand_core"] }

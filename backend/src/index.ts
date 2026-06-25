@@ -1,19 +1,211 @@
-import express, { Request, Response } from 'express';
+// @ts-nocheck
+import config from './config/env.config.js';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import express, { Request, Response } from 'express';
+import { createServer } from 'http';
+import { errorHandler } from './middleware/errorHandler.js';
+import { initializeSentry, getSentryRequestHandler, getSentryErrorHandler } from './utils/sentry.js';
+import swaggerUi from 'swagger-ui-express';
+import blockHeaderListener from './cache/BlockHeaderListener.js';
+import cacheMetrics from './cache/CacheMetrics.js';
+import cacheWarmer from './cache/CacheWarmer.js';
+import distributedCacheManager from './cache/DistributedCacheManager.js';
+import redisClient from './cache/RedisClient.js';
+import { rpcCacheHeadersMiddleware, rpcCacheMiddleware } from './cache/RPCInterceptor.js';
+import { swaggerSpec } from './config/swagger.js';
+import prisma from './db/index.js';
+import { dbRoutingMiddleware } from './middleware/dbRouting.js';
+import { decryptionMiddleware } from './middleware/encryptionMiddleware.js';
+import { rateLimiter } from './middleware/rateLimiter.js';
+import { requestLogger } from './middleware/requestLogger.js';
+import { requireWorkspaceMiddleware } from './middleware/WorkspaceContext.js';
+import freelanceRoute from './routes/freelance.js';
+import routes from './routes/index.js';
+import { startWebhookWorker, stopWebhookWorker } from './services/webhooks/index.js';
+import { validateEnvironment } from './utils/checkEnv.js';
+import logger from './utils/logger.js';
+import { pubClient, redisConnection, subClient } from './utils/redis.js';
+import swaggerUi from 'swagger-ui-express';
+import { setRateLimitEnvOverrides } from './config/rateLimit.config.js';
+import { initializeWebSocket } from './websocket/WebSocketServer.js';
 
-dotenv.config();
+// Load environment variables
+// dotenv.config(); // Skip in Docker Compose - use environment variables instead
 
-const app = express();
-const port = process.env.PORT || 8080;
+// Validate environment variables before starting the application
+// Skip validation in test environment as tests may override environment variables
+// Note: validation is now also triggered during config module load
+if (config.app.env !== 'test') {
+  logger.info('Application Configuration Loaded', config.getSafeConfig());
+}
+
+// Initialize Sentry if configured
+initializeSentry();
+
+// Initialize Redis connection
+if (config.app.env !== 'test') {
+  redisClient.connect().catch((err) => {
+    logger.warn('Redis connection failed, continuing without cache:', err);
+  });
+
+  // Initialize distributed caching components
+  blockHeaderListener.start().catch((err) => {
+    logger.warn('BlockHeaderListener failed to start:', err);
+  });
+
+  cacheWarmer.start().catch((err) => {
+    logger.warn('CacheWarmer failed to start:', err);
+  });
+
+  startWebhookWorker();
+
+  logger.info('Distributed caching layer initialized');
+}
+
+export const app: express.Application = express();
+const httpServer = createServer(app);
+const port = config.app.port || 8080;
+
+// Wire rate limit config from environment variables
+setRateLimitEnvOverrides({
+  'auth-login': {
+    burst: { windowMs: 1000, max: config.rateLimiting.loginBurstMax },
+    sustained: { windowMs: 60000, max: config.rateLimiting.defaultSustainedMax },
+  },
+  'auth-register': {
+    burst: { windowMs: 1000, max: config.rateLimiting.registerBurstMax },
+    sustained: { windowMs: 60000, max: config.rateLimiting.defaultSustainedMax },
+  },
+});
 
 app.use(cors());
 app.use(express.json());
+app.use(decryptionMiddleware);
+app.use(dbRoutingMiddleware);
 
-app.get('/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok', message: 'Web3 Student Lab Backend is running' });
+// Global Rate Limiting - configurable, multi-tier, per-user + per-endpoint
+if (config.rateLimiting.enabled) {
+  app.use(rateLimiter);
+}
+
+app.use(requestLogger);
+app.use(getSentryRequestHandler());
+
+/**
+ * @openapi
+ * /health:
+ *   get:
+ *     summary: Health check endpoint
+ *     description: Returns the health status of the API and its dependencies
+ *     tags: [System]
+ *     responses:
+ *       200:
+ *         description: API is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: ok
+ *                 message:
+ *                   type: string
+ *                   example: Web3 Student Lab Backend is running
+ *                 uptime:
+ *                   type: number
+ *                   example: 123.45
+ *                 version:
+ *                   type: string
+ *                   example: 1.0.0
+ *                 redis:
+ *                   type: string
+ *                   example: connected
+ */
+// Health check endpoint
+app.get('/health', (_req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    message: 'Web3 Student Lab Backend is running',
+    uptime: process.uptime(),
+    version: '1.0.0',
+    redis: redisClient.isHealthy() ? 'connected' : 'disconnected',
+    redisMode: redisClient.getMode(),
+    blockHeaderListener: blockHeaderListener.getStatus(),
+    cacheWarmer: cacheWarmer.getStatus(),
+  });
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+// Cache metrics endpoint
+app.use('/api/v1/cache', cacheMetrics);
+
+// RPC caching middleware for Soroban calls
+// This middleware intercepts and caches RPC method calls
+app.use('/api/rpc', rpcCacheHeadersMiddleware);
+app.use('/api/rpc', rpcCacheMiddleware);
+
+// API Routes - with workspace isolation
+app.use('/api/v1', requireWorkspaceMiddleware, routes);
+
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Web3 Student Lab API Documentation'
+}));
+
+// Start server only if not in test environment
+let server: ReturnType<typeof httpServer.listen> | null = null;
+
+if (config.app.env !== 'test') {
+  server = httpServer.listen(port, () => {
+    logger.info(`Server is running on port ${port}`);
+  });
+
+  initializeWebSocket(server);
+
+  // Graceful shutdown
+  process.on('SIGINT', async () => {
+    logger.info('Shutting down gracefully...');
+
+    // Stop cache components
+    blockHeaderListener.stop();
+    cacheWarmer.stop();
+    await stopWebhookWorker();
+    await distributedCacheManager.gracefulShutdown();
+
+    // Clean up connections
+    await redisClient.disconnect();
+    await prisma.$disconnect();
+    await Promise.all([redisConnection.quit(), pubClient.quit(), subClient.quit()]);
+
+    server?.close(() => {
+      logger.info('Server closed');
+      process.exit(0);
+    });
+  });
+
+  process.on('SIGTERM', async () => {
+    logger.info('Shutting down gracefully...');
+
+    // Stop cache components
+    blockHeaderListener.stop();
+    cacheWarmer.stop();
+    await stopWebhookWorker();
+    await distributedCacheManager.gracefulShutdown();
+
+    // Clean up connections
+    await redisClient.disconnect();
+    await prisma.$disconnect();
+    await Promise.all([redisConnection.quit(), pubClient.quit(), subClient.quit()]);
+
+    server?.close(() => {
+      logger.info('Server closed');
+      process.exit(0);
+    });
+  });
+}
+
+app.use('/api/freelance', freelanceRoute);
+app.use(getSentryErrorHandler());
+app.use(errorHandler);
