@@ -29,6 +29,13 @@ interface CodeEditorProps {
   roomName: string;
   mobileMode?: boolean;
   collaborationProvider?: CollaborationProvider;
+  settings?: MonacoEditorSettings;
+}
+
+export interface MonacoEditorSettings {
+  fontSize: number;
+  tabSize: number;
+  vimBindings: boolean;
 }
 
 const DEFAULT_CODE = `#![no_std]
@@ -107,11 +114,13 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   roomName,
   mobileMode = false,
   collaborationProvider,
+  settings = { fontSize: 14, tabSize: 2, vimBindings: false },
 }) => {
   const [editorInstance, setEditorInstance] = useState<editor.IStandaloneCodeEditor | null>(null);
   const [code, setCode] = useState(DEFAULT_CODE);
   const [monacoError, setMonacoError] = useState(false);
   const linterRef = useRef<SorobanLinterInstance | null>(null);
+  const compileActionRef = useRef<{ dispose: () => void } | null>(null);
   const prefersReducedMotion = useMemo(() => getPrefersReducedMotion(), []);
 
   const collaboratorLabel = useMemo(() => {
@@ -132,6 +141,15 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   const handleEditorDidMount: OnMount = useCallback(
     (mountedEditor, monaco) => {
       setEditorInstance(mountedEditor);
+      compileActionRef.current?.dispose();
+      compileActionRef.current = mountedEditor.addAction({
+        id: 'web3-lab.compile-contract',
+        label: 'Compile Contract',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+        run: () => {
+          document.dispatchEvent(new CustomEvent('playground-compile'));
+        },
+      });
 
       extendRustLanguage(monaco);
       registerSorobanCompletion(monaco);
@@ -179,6 +197,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
       const model = mountedEditor.getModel();
       if (model) {
+        model.updateOptions({ tabSize: settings.tabSize, insertSpaces: true });
         if (linterRef.current) {
           linterRef.current.dispose();
         }
@@ -189,8 +208,21 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
         });
       }
     },
-    []
+    [settings.tabSize]
   );
+
+  useEffect(() => {
+    if (!editorInstance) return;
+    editorInstance.updateOptions({
+      fontSize: mobileMode ? Math.min(settings.fontSize, 14) : settings.fontSize,
+      tabSize: settings.tabSize,
+      cursorStyle: settings.vimBindings ? 'block' : 'line',
+    });
+    editorInstance.getModel()?.updateOptions({
+      tabSize: settings.tabSize,
+      insertSpaces: true,
+    });
+  }, [editorInstance, mobileMode, settings.fontSize, settings.tabSize, settings.vimBindings]);
 
   useEffect(() => {
     return () => {
@@ -198,6 +230,8 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
         linterRef.current.dispose();
         linterRef.current = null;
       }
+      compileActionRef.current?.dispose();
+      compileActionRef.current = null;
     };
   }, []);
 
@@ -257,9 +291,12 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
             onMount={handleEditorDidMount}
             options={{
               minimap: { enabled: false },
-              fontSize: mobileMode ? 12 : 14,
+              fontSize: mobileMode ? Math.min(settings.fontSize, 14) : settings.fontSize,
               fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
               fontLigatures: true,
+              tabSize: settings.tabSize,
+              insertSpaces: true,
+              cursorStyle: settings.vimBindings ? 'block' : 'line',
               automaticLayout: true,
               padding: { top: mobileMode ? 20 : 24 },
               scrollBeyondLastLine: false,
