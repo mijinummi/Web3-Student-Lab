@@ -123,13 +123,19 @@ impl DynamicStakingContract {
             .get::<_, Address>(&StakingDataKey::StakingToken)
             .unwrap();
 
-        // Calculate multiplier: base (1.0) + (lock_duration / MAX_LOCK_DURATION) * 1.0
-        // Resulting multiplier ranges from 1x to 2x.
-        let bonus = (lock_duration_seconds as u128)
-            .saturating_mul(PRECISION)
-            .checked_div(MAX_LOCK_DURATION as u128)
-            .unwrap_or(0);
-        let multiplier = PRECISION.saturating_add(bonus);
+        // Calculate multiplier based on lock-up duration tiers.
+        let day = 86_400u64;
+        let multiplier = if lock_duration_seconds < 30 * day {
+            PRECISION // Tier 1: < 30 days -> 1.0x multiplier
+        } else if lock_duration_seconds < 90 * day {
+            PRECISION + (PRECISION / 4) // Tier 2: 30 to 89 days -> 1.25x multiplier
+        } else if lock_duration_seconds < 180 * day {
+            PRECISION + (PRECISION / 2) // Tier 3: 90 to 179 days -> 1.5x multiplier
+        } else if lock_duration_seconds < 365 * day {
+            PRECISION + (PRECISION * 3 / 4) // Tier 4: 180 to 364 days -> 1.75x multiplier
+        } else {
+            PRECISION * 2 // Tier 5: >= 365 days (MAX_LOCK_DURATION) -> 2.0x multiplier
+        };
 
         let effective_amount = amount
             .saturating_mul(multiplier)

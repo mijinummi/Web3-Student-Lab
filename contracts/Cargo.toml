@@ -16,7 +16,8 @@ members = [
     "multisig_wallet_timelock",
     "course_proxy",
     "auth_checker",
-    "cross_chain_client"
+    "cross_chain_client",
+    "freelance-platform"
 ]
 
 [lib]

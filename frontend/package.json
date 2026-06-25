@@ -23,6 +23,7 @@
     "@xstate/react": "^6.1.0",
     "axios": "^1.13.6",
     "bignumber.js": "^10.0.2",
+    "chart.js": "^4.5.1",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
     "date-fns": "^4.1.0",
@@ -39,6 +40,7 @@
     "next": "16.1.6",
     "next-themes": "^0.2.1",
     "react": "19.2.3",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "19.2.3",
     "react-is": "^19.2.7",
     "react-joyride": "^3.1.0",
@@ -82,5 +84,6 @@
       "keccak",
       "sharp"
     ]
-  }
+  },
+  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
 }
