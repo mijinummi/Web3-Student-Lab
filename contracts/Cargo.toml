@@ -13,7 +13,10 @@ members = [
     "payment_streaming",
     "commit_reveal_rng",
     "quadratic_funding",
-    "multisig_wallet_timelock"
+    "multisig_wallet_timelock",
+    "course_proxy",
+    "auth_checker",
+    "cross_chain_client"
 ]
 
 [lib]
