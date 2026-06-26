@@ -17,6 +17,7 @@ import securityRouter from './security.routes.js';
 import studentsRouter from './students.js';
 
 import notificationRouter from '../notifications/notification.routes.js';
+import notificationPreferencesRouter from '../notifications/preferences.routes.js';
 import metricsRouter from './metrics.routes.js';
 
 import webhooksRouter from './webhooks.js';
@@ -35,6 +36,7 @@ router.use('/auth', authRoutes);
 router.use('/learning', learningRoutes);
 router.use('/contracts', contractRouter);
 router.use('/notifications', notificationRouter);
+router.use('/notifications/preferences', notificationPreferencesRouter);
 router.use('/security', securityRouter);
 router.use('/generator', generatorRouter);
 router.use('/export', exportRouter);

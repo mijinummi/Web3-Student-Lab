@@ -260,6 +260,29 @@ model WebhookSubscription {
   @@map("webhook_subscriptions")
 }
 
+model NotificationPreferences {
+  id             String   @id @default(cuid())
+  workspaceId    String   @default("default")
+  studentId      String
+  emailEnabled   Boolean  @default(true)
+  pushEnabled    Boolean  @default(true)
+  inAppEnabled   Boolean  @default(true)
+  courseUpdates  Boolean  @default(true)
+  announcements  Boolean  @default(true)
+  newCourses     Boolean  @default(true)
+  reminders      Boolean  @default(true)
+  frequency      String   @default("immediate")
+  quietHoursStart String?
+  quietHoursEnd   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([studentId])
+  @@map("notification_preferences")
+  @@index([studentId])
+  @@index([workspaceId, studentId])
+}
+
 model StudentActivity {
   id        String   @id @default(cuid())
   studentId String

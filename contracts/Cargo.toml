@@ -11,6 +11,7 @@ members = [
     "implementation_v2",
     "smart_vault",
     "payment_streaming",
+    "payment_gateway",
     "commit_reveal_rng",
     "quadratic_funding",
     "multisig_wallet_timelock",
