@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { Router } from 'express';
 import dashboardRoutes from '../dashboard/dashboard.routes.js';
+import activityLogRouter from '../dashboard/activityLog.routes.js';
 import feedbackRouter from '../feedback/feedback.routes.js';
 import userRouter from '../user/routes.js';
 import analyticsRouter from './analytics.routes.js';
@@ -15,6 +16,9 @@ import healthRouter from './health.routes.js';
 import learningRoutes from './learning/learning.routes.js';
 import securityRouter from './security.routes.js';
 import studentsRouter from './students.js';
+import simulatorErrorsRouter from './simulatorErrors.routes.js';
+import termsOfServiceRouter from './termsOfService.routes.js';
+import privacyPolicyRouter from './privacyPolicy.routes.js';
 
 import notificationRouter from '../notifications/notification.routes.js';
 import notificationPreferencesRouter from '../notifications/preferences.routes.js';
@@ -31,6 +35,7 @@ router.use('/certificates', certificatesRouter);
 router.use('/courses', coursesRouter);
 router.use('/enrollments', enrollmentsRouter);
 router.use('/dashboard', dashboardRoutes);
+router.use('/dashboard/activity-log', activityLogRouter);
 router.use('/feedback', feedbackRouter);
 router.use('/auth', authRoutes);
 router.use('/learning', learningRoutes);
@@ -43,5 +48,8 @@ router.use('/export', exportRouter);
 router.use('/webhooks', webhooksRouter);
 router.use('/user', userRouter);
 router.use('/metrics', metricsRouter);
+router.use('/simulator/errors', simulatorErrorsRouter);
+router.use('/roadmap/tos', termsOfServiceRouter);
+router.use('/playground/privacy-policy', privacyPolicyRouter);
 
 export default router;
