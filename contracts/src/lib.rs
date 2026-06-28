@@ -1,46 +1,6 @@
-//! Certificate contract with 2-of-3 governance multisig, RBAC, pause, and WASM upgrade
-//! through governance proposals (`PendingAdminAction::Upgrade`).
-//!
-//! **Upgrade risks:** Malicious WASM can replace authorization logic or corrupt storage
-//! expectations; compromised governance keys imply full contract takeover. Audit bytecode,
-//! test migrations, and prefer timelocks where applicable.
-
 #![no_std]
-#![allow(clippy::all)]
-#![allow(warnings)]
-#![allow(clippy::all)]
-#![allow(warnings)]
-
-pub mod activity_log;
-pub mod admin;
 pub mod crowdfunding;
-pub mod dao_treasury;
-pub mod dex_aggregator;
-pub mod distribution_manager;
 pub mod dynamic_staking;
-pub mod enrollment;
-pub mod events;
-pub mod execution_engine;
-pub mod gaming_asset_exchange;
-pub mod membership_nft;
-pub mod oracle_aggregator;
-pub mod paymaster;
-pub mod payment_gateway;
-pub mod payment_scheduler;
-pub mod quadratic_voting;
-pub mod rarity_validator;
-pub mod rbac;
-pub mod reputation_system;
-pub mod revocation;
-pub mod route_optimizer;
-pub mod royalty_splitter;
-pub mod sai_wrapper;
-pub mod scoring_algorithm;
-pub mod session;
-pub mod smart_wallet;
-pub mod staking;
-pub mod statistics;
-pub mod sybil_resistance;
 pub mod token_buyback;
 pub mod token_gated_access;
 pub mod verification;
@@ -1739,3 +1699,4 @@ mod test {
     }
     env.crypto().sha256(&buffer).into()
 }
+pub mod amm_pool;

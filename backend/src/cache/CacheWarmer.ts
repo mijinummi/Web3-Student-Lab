@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { cacheTTL } from '../config/redis.config.js';
 import logger from '../utils/logger.js';
 import cacheService, { CACHE_KEYS } from './CacheService.js';

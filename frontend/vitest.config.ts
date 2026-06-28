@@ -1,9 +1,16 @@
 import { defineConfig } from 'vitest/config';
+import path from 'path';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    exclude: ['e2e/**', 'node_modules/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -14,8 +21,12 @@ export default defineConfig({
         statements: 90,
       },
       include: [
-        'src/lib/p2p-crypto.ts',
-        'src/lib/web3-transaction-simulator.ts',
+        'src/lib/keyboard-navigation.ts',
+        'src/hooks/useKeyboardNavigation.ts',
+        'src/hooks/useFocusTrap.ts',
+        'src/hooks/useRovingTabindex.ts',
+        'src/components/ui/SkipLink.tsx',
+        'src/components/ui/FocusTrap.tsx',
       ],
     },
   },

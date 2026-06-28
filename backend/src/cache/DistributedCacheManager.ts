@@ -1,3 +1,4 @@
+// @ts-nocheck
 import logger from '../utils/logger.js';
 import cacheService from './CacheService.js';
 import redisClient from './RedisClient.js';

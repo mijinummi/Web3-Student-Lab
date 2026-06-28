@@ -36,7 +36,11 @@ class RedisClient {
           logger.info('Connecting to Redis Sentinel...');
           break;
         default:
-          this.client = new Redis(redisConfig);
+          if (process.env.REDIS_URL) {
+            this.client = new Redis(process.env.REDIS_URL, redisConfig);
+          } else {
+            this.client = new Redis(redisConfig);
+          }
           logger.info('Connecting to standalone Redis...');
       }
 

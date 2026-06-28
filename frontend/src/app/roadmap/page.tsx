@@ -95,17 +95,66 @@ export default function RoadmapPage() {
   if (isInitializing) {
     return <div className="min-h-[calc(100vh-80px)] bg-black text-white flex items-center justify-center">Loading Roadmap Index...</div>;
   }
+import { useState, useEffect, useMemo } from 'react';
+import { RoadmapView } from '@/components/roadmap';
+import { coursesAPI } from '@/lib/api';
+import type { Course } from '@/lib/api';
+import { Skeleton } from '@/components/common/Skeleton';
+import { Map, MapPin } from 'lucide-react';
+
+export default function RoadmapPage() {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadCourses() {
+      try {
+        const data = await coursesAPI.getAll();
+        if (!mounted) return;
+        setCourses(data);
+        if (data.length > 0) {
+          setSelectedCourseId(data[0]!.id);
+        }
+      } catch (err) {
+        if (!mounted) return;
+        setError(
+          err instanceof Error ? err.message : 'Failed to load courses'
+        );
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    loadCourses();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const selectedCourse = useMemo(
+    () => courses.find((c) => c.id === selectedCourseId) ?? null,
+    [courses, selectedCourseId]
+  );
 
   return (
-    <div className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-black p-6 font-mono text-white md:p-12">
-      {/* Background Grid Accent */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#222_1px,transparent_1px)] bg-[size:40px_40px] opacity-50"></div>
-
-      <div className="mx-auto flex h-full max-w-7xl flex-col items-center">
-        {/* Header */}
-        <div className="mb-16 w-full border-b border-red-600/20 pb-8 text-center">
-          <h1 className="mb-2 text-4xl font-black tracking-tighter uppercase">
-            Technical <span className="text-red-500">Roadmap</span>
+    <div className="relative min-h-[calc(100vh-80px)] bg-black overflow-hidden font-mono selection:bg-red-500/30 pb-24">
+      {/* Abstract Background Glows */}
+      <div className="absolute top-[10%] left-[10%] w-[30%] h-[30%] rounded-full bg-[radial-gradient(circle,rgba(220,38,38,0.1),transparent_70%)] blur-[100px] pointer-events-none" />
+      
+      <div className="mx-auto max-w-7xl px-4 pt-16 sm:px-6 lg:px-8 relative z-10">
+        <div className="mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-red-500/30 bg-red-500/10 text-red-400 text-[10px] font-black tracking-widest uppercase shadow-[0_0_20px_rgba(220,38,38,0.2)] mb-6">
+            <Map className="w-3.5 h-3.5" />
+            <span>Learning Trajectory</span>
+          </div>
+          <h1 className="mb-4 text-5xl sm:text-7xl font-black tracking-tighter text-white uppercase leading-[1.05]">
+            INTERACTIVE <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">ROADMAP</span>
           </h1>
           <p className="text-xs tracking-[0.3em] text-gray-500 uppercase">
             Module Hierarchy & Skill Acquisition Tree (Indexed)
@@ -193,32 +242,27 @@ export default function RoadmapPage() {
                 <span className="rounded border border-white/10 bg-zinc-900 px-2 py-1 text-[9px] font-black tracking-widest uppercase">
                   {node.title}
                 </span>
-              </div>
-            </button>
-          ))}
+          <p className="max-w-2xl text-sm leading-relaxed text-gray-400 font-light border-l-2 border-red-500/50 pl-4">
+            Visualize your learning journey through structured levels. Track
+            completed modules, see what&apos;s available next, and navigate your
+            curriculum path.
+          </p>
+        </div>
 
-          {/* Active Detail Overlay */}
-          <div className="animate-in fade-in slide-in-from-bottom-4 absolute right-10 bottom-10 left-10 rounded-2xl border border-red-500/30 bg-zinc-950 p-6 shadow-2xl backdrop-blur-xl md:right-10 md:left-auto md:w-80">
-            <div className="mb-4 flex items-start justify-between">
-              <span
-                className={`rounded border px-2 py-0.5 text-[9px] font-black tracking-widest uppercase ${
-                  activeNode.status === 'COMPLETED'
-                    ? 'border-green-500/30 bg-green-500/10 text-green-500'
-                    : activeNode.status === 'IN_PROGRESS'
-                      ? 'border-red-500/30 bg-red-500/10 text-red-500'
-                      : 'border-white/5 bg-zinc-800 text-gray-500'
-                }`}
-              >
-                {activeNode.status.replace('_', ' ')}
-              </span>
-              <span className="text-[10px] font-bold text-gray-600">NODE_0{activeNode.id}</span>
+        {loading ? (
+          <div className="space-y-6">
+            <Skeleton className="h-14 w-full max-w-xs rounded-2xl bg-white/5 border border-white/10" />
+            <div className="flex min-h-[500px] items-center justify-center rounded-[2rem] border border-white/5 bg-zinc-950/60 backdrop-blur-md">
+              <div className="flex flex-col items-center gap-6">
+                <Skeleton className="h-10 w-64 bg-white/5 rounded-xl" />
+                <Skeleton className="h-4 w-48 bg-white/5" />
+                <Skeleton className="h-64 w-[30rem] max-w-[90vw] rounded-[2rem] bg-white/5" />
+              </div>
             </div>
-            <h3 className="mb-2 text-xl font-black tracking-tighter text-white uppercase">
-              {activeNode.title}
-            </h3>
-            <p className="mb-6 text-xs leading-relaxed font-light text-gray-400">
-              {activeNode.desc}
-            </p>
+          </div>
+        ) : error ? (
+          <div className="flex min-h-[400px] flex-col items-center justify-center gap-6 rounded-[2rem] border border-red-500/30 bg-red-500/10 p-12 backdrop-blur-md shadow-[0_0_30px_rgba(220,38,38,0.15)]">
+            <p className="text-lg font-black uppercase tracking-widest text-red-500">{error}</p>
             <button
               onClick={handleNodeAction}
               className={`w-full py-3 text-[10px] font-black tracking-widest uppercase transition-all ${
@@ -232,17 +276,50 @@ export default function RoadmapPage() {
                 : activeNode.status === 'IN_PROGRESS'
                   ? 'Complete Node'
                   : 'Node Locked'}
+              type="button"
+              onClick={() => window.location.reload()}
+              className="rounded-2xl bg-red-600 px-8 py-4 text-xs font-black tracking-[0.2em] text-white uppercase transition-all hover:bg-red-500 shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:scale-105"
+            >
+              Retry Connection
             </button>
           </div>
-        </div>
+        ) : (
+          <>
+            <div className="mb-10 bg-zinc-950/60 border border-white/5 p-6 rounded-[2rem] backdrop-blur-md inline-block">
+              <label
+                htmlFor="course-select"
+                className="mb-3 block text-[10px] font-black tracking-[0.2em] text-red-500 uppercase flex items-center gap-2"
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                Select Learning Path
+              </label>
+              <div className="relative">
+                <select
+                  id="course-select"
+                  value={selectedCourseId ?? ''}
+                  onChange={(e) => setSelectedCourseId(e.target.value || null)}
+                  className="w-full sm:w-80 appearance-none rounded-2xl border border-white/10 bg-black px-6 py-4 text-sm font-bold text-white transition-all focus:border-red-500/50 focus:outline-none focus:ring-4 focus:ring-red-500/10 cursor-pointer shadow-inner"
+                  aria-label="Select a course to view its roadmap"
+                >
+                  {courses.map((course) => (
+                    <option key={course.id} value={course.id}>
+                      {course.title}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-6 text-gray-500">
+                  <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
 
-        <div className="mt-12 max-w-2xl px-8 text-center">
-          <p className="border-t border-white/5 pt-8 text-xs font-light tracking-widest text-gray-600 uppercase">
-            Interactive Roadmap visualized in real-time. Progress synced to your encrypted operator
-            profile. Reach <span className="font-bold text-red-500">Expert Tier</span> to unlock
-            dark-mode advanced governance modules.
-          </p>
-        </div>
+            <div className="rounded-[2rem] overflow-hidden border border-white/5 bg-zinc-950/40 backdrop-blur-md shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+              <RoadmapView course={selectedCourse} key={selectedCourseId} />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
