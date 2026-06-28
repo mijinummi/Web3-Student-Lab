@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { DatabaseManager, RoadmapNodeRecord } from '@/lib/storage/DatabaseManager';
 
-const NODES = [
+const DEFAULT_NODES = [
   {
     id: 1,
     title: 'Foundations',
@@ -46,7 +47,54 @@ const NODES = [
 ];
 
 export default function RoadmapPage() {
-  const [activeNode, setActiveNode] = useState(NODES[1]);
+  const [nodes, setNodes] = useState(DEFAULT_NODES);
+  const [activeNode, setActiveNode] = useState(DEFAULT_NODES[1]);
+  const [db] = useState(() => new DatabaseManager());
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  useEffect(() => {
+    const initDb = async () => {
+      try {
+        const storedNodes = await db.listRoadmapNodes();
+        if (storedNodes.length > 0) {
+          // Merge stored status with default nodes
+          const mergedNodes = DEFAULT_NODES.map(defaultNode => {
+            const stored = storedNodes.find(n => n.id === defaultNode.id);
+            return stored ? { ...defaultNode, status: stored.status } : defaultNode;
+          });
+          setNodes(mergedNodes);
+          
+          // Set active node to the first in-progress node, or the stored node 2
+          const inProgressNode = mergedNodes.find(n => n.status === 'IN_PROGRESS');
+          if (inProgressNode) setActiveNode(inProgressNode);
+        } else {
+          // Initialize DB with default nodes
+          await Promise.all(DEFAULT_NODES.map(node => 
+            db.upsertRoadmapNode({ id: node.id, status: node.status, updatedAt: Date.now() })
+          ));
+        }
+      } catch (error) {
+        console.error('Failed to load roadmap from DB:', error);
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+    initDb();
+  }, [db]);
+
+  const handleNodeAction = async () => {
+    if (activeNode.status === 'IN_PROGRESS') {
+      const updatedNode = { ...activeNode, status: 'COMPLETED' };
+      const newNodes = nodes.map(n => n.id === activeNode.id ? updatedNode : n);
+      setNodes(newNodes);
+      setActiveNode(updatedNode);
+      await db.upsertRoadmapNode({ id: activeNode.id, status: 'COMPLETED', updatedAt: Date.now() });
+    }
+  };
+
+  if (isInitializing) {
+    return <div className="min-h-[calc(100vh-80px)] bg-black text-white flex items-center justify-center">Loading Roadmap Index...</div>;
+  }
 
   return (
     <div className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-black p-6 font-mono text-white md:p-12">
@@ -60,7 +108,7 @@ export default function RoadmapPage() {
             Technical <span className="text-red-500">Roadmap</span>
           </h1>
           <p className="text-xs tracking-[0.3em] text-gray-500 uppercase">
-            Module Hierarchy & Skill Acquisition Tree
+            Module Hierarchy & Skill Acquisition Tree (Indexed)
           </p>
         </div>
 
@@ -115,7 +163,7 @@ export default function RoadmapPage() {
           </svg>
 
           {/* Nodes */}
-          {NODES.map((node) => (
+          {nodes.map((node) => (
             <button
               key={node.id}
               onClick={() => setActiveNode(node)}
@@ -172,6 +220,7 @@ export default function RoadmapPage() {
               {activeNode.desc}
             </p>
             <button
+              onClick={handleNodeAction}
               className={`w-full py-3 text-[10px] font-black tracking-widest uppercase transition-all ${
                 activeNode.status === 'LOCKED'
                   ? 'cursor-not-allowed bg-zinc-800 text-gray-600'
@@ -181,7 +230,7 @@ export default function RoadmapPage() {
               {activeNode.status === 'COMPLETED'
                 ? 'Review Protocol'
                 : activeNode.status === 'IN_PROGRESS'
-                  ? 'Initiate Node'
+                  ? 'Complete Node'
                   : 'Node Locked'}
             </button>
           </div>

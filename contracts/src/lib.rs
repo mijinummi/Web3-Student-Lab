@@ -52,6 +52,7 @@ pub mod airdrop_manager;
 pub mod merkle_distributor;
 pub mod milestone_release;
 pub mod token;
+pub mod playground_cache;
 pub mod upgrade;
 pub mod lending;
 #[cfg(test)]
